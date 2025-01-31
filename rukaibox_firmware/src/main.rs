@@ -108,7 +108,7 @@ fn main() -> ! {
 
             gamecube_controller.wait_for_poll_start(&timer, &mut delay);
             let report = input.poll();
-            gamecube_controller.respond_to_poll(&timer, &mut delay, &report);
+            gamecube_controller.respond_to_poll(&timer, &mut delay, report);
         }
     } else {
         loop {

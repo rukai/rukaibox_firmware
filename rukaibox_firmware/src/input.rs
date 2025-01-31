@@ -29,8 +29,29 @@ pub struct Input {
     pub start: Pin<DynPinId, FunctionSioInput, PullUp>,
 }
 
+pub struct GamecubeInput {
+    pub start: bool,
+    pub a: bool,
+    pub b: bool,
+    pub x: bool,
+    pub y: bool,
+    pub z: bool,
+    pub dpad_up: bool,
+    pub dpad_down: bool,
+    pub dpad_left: bool,
+    pub dpad_right: bool,
+    pub l_digital: bool,
+    pub r_digital: bool,
+    pub stick_x: u8,
+    pub stick_y: u8,
+    pub cstick_x: u8,
+    pub cstick_y: u8,
+    pub l_analog: u8,
+    pub r_analog: u8,
+}
+
 impl Input {
-    pub fn poll(&mut self) -> [u8; 8] {
+    pub fn poll(&mut self) -> GamecubeInput {
         let stick_x = match (self.left.is_low().unwrap(), self.right.is_low().unwrap()) {
             (true, false) => 0,
             (false, true) => 255,
@@ -44,7 +65,7 @@ impl Input {
             (false, true) => 0,
             _ => 128,
         };
-        let c_x = match (
+        let cstick_x = match (
             self.c_left.is_low().unwrap(),
             self.c_right.is_low().unwrap(),
         ) {
@@ -52,46 +73,31 @@ impl Input {
             (false, true) => 255,
             _ => 128,
         };
-        let c_y = match (self.c_up.is_low().unwrap(), self.c_down.is_low().unwrap()) {
+        let cstick_y = match (self.c_up.is_low().unwrap(), self.c_down.is_low().unwrap()) {
             (true, false) => 255,
             (false, true) => 0,
             _ => 128,
         };
-        let analog_l = 0;
-        let analog_r = 0;
 
-        let buttons1 = if self.a.is_low().unwrap() {
-            0b0000_0001
-        } else {
-            0
-        } | if self.b.is_low().unwrap() {
-            0b0000_0010
-        } else {
-            0
-        } | if self.x.is_low().unwrap() {
-            0b0000_0100
-        } else {
-            0
-        } | if self.y.is_low().unwrap() {
-            0b0000_1000
-        } else {
-            0
-        } | if self.start.is_low().unwrap() {
-            0b0001_0000
-        } else {
-            0
-        };
-
-        #[rustfmt::skip]
-            let buttons2 = 0b1000_0000
-            // up taunt
-            | if self.taunt.is_low().unwrap() { 0b0000_1000 } else { 0 }
-            | if self.z.is_low().unwrap() { 0b0001_0000 } else { 0 }
-            | if self.r.is_low().unwrap() { 0b0010_0000 } else { 0 }
-            | if self.l.is_low().unwrap() { 0b0100_0000 } else { 0 };
-
-        [
-            buttons1, buttons2, stick_x, stick_y, c_x, c_y, analog_l, analog_r,
-        ]
+        GamecubeInput {
+            start: self.start.is_low().unwrap(),
+            a: self.a.is_low().unwrap(),
+            b: self.b.is_low().unwrap(),
+            x: self.x.is_low().unwrap(),
+            y: self.y.is_low().unwrap(),
+            z: self.z.is_low().unwrap(),
+            dpad_up: self.taunt.is_low().unwrap(),
+            dpad_down: false,
+            dpad_left: false,
+            dpad_right: false,
+            l_digital: self.l.is_low().unwrap(),
+            r_digital: self.r.is_low().unwrap(),
+            stick_x,
+            stick_y,
+            cstick_x,
+            cstick_y,
+            l_analog: 0,
+            r_analog: 0,
+        }
     }
 }

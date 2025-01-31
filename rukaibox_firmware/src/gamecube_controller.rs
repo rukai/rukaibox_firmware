@@ -18,6 +18,8 @@ use rp2040_hal::{
 
 use bsp::hal::clocks::Clock;
 
+use crate::input::GamecubeInput;
+
 pub struct ConsolePio {
     data_pin: Pin<Gpio28, FunctionPio0, PullDown>,
     tx: Tx<(PIO0, SM0)>,
@@ -199,30 +201,30 @@ impl GamecubeController {
                 // set perfect deadzone, we have no analog sticks
                 // Apparently gc adapter ignores this though and uses the first poll response instead.
                 controller.send(&[
-                    0,   // butons1
-                    1,   // butons2
-                    128, // stick x
-                    128, // stick y
-                    128, // cstick x
-                    128, // cstick y
-                    0,   // left trigger
-                    0,   // right trigger
-                    0,   // reserved
-                    0,   // reserved
+                    0,             // butons1
+                    0b1000_0000,   // butons2
+                    128,           // stick x
+                    128,           // stick y
+                    128,           // cstick x
+                    128,           // cstick y
+                    0,             // left trigger
+                    0,             // right trigger
+                    0,             // reserved
+                    0,             // reserved
                 ]);
             }
             Some(GamecubeCommand::Poll) => {
                 let report = [
-                    0,   // butons1
-                    1,   // butons2
-                    128, // stick x
-                    128, // stick y
-                    128, // cstick x
-                    128, // cstick y
-                    0,   // left trigger
-                    0,   // right trigger
+                    0,             // butons1
+                    0b1000_0000,   // butons2
+                    128,           // stick x
+                    128,           // stick y
+                    128,           // cstick x
+                    128,           // cstick y
+                    0,             // left trigger
+                    0,             // right trigger
                 ];
-                controller.respond_to_poll(timer, delay, &report);
+                controller.respond_to_poll_raw(timer, delay, &report);
             }
             Some(GamecubeCommand::Unknown) => {
                 delay.delay_us(130);
@@ -287,42 +289,11 @@ impl GamecubeController {
         });
     }
 
-    // pub fn restart_sm(pio: &mut ConsolePio, address: u8) {
-    //     let (sm0, installed) = pio.sm.uninit(pio.rx, pio.tx);
-    //     let data_pin_num = pio.data_pin.id().num;
-    //     let bitrate = 250000;
-    //     let cycles_per_bit = 10 + 20 + 10;
-    //     let divisor = 1.0;
-    //     //let divisor = clocks.system_clock.freq().to_Hz() as f32 / (cycles_per_bit * bitrate) as f32;
-    //     let (sm, rx, tx) = rp2040_hal::pio::PIOBuilder::from_installed_program(installed)
-    //         .out_pins(pio.data_pin.id().num, 1)
-    //         .set_pins(data_pin_num, 1)
-    //         .in_pin_base(data_pin_num)
-    //         // out shift
-    //         .out_shift_direction(ShiftDirection::Left)
-    //         .autopull(false)
-    //         .pull_threshold(9)
-    //         // in shift
-    //         .in_shift_direction(ShiftDirection::Left)
-    //         .autopush(true)
-    //         .push_threshold(8)
-    //         .clock_divisor(divisor)
-    //         .build(sm0);
-    //     let sm = sm.start();
+    pub fn respond_to_poll(&mut self, timer: &Timer, delay: &mut Delay, input: GamecubeInput) {
+        self.respond_to_poll_raw(timer, delay, &Self::create_report_from_input(input));
+    }
 
-    //     pio.sm.exec_instruction(Instruction {
-    //         operands: InstructionOperands::JMP {
-    //             condition: pio::JmpCondition::Always,
-    //             address: address,
-    //         },
-    //         delay: 0,
-    //         side_set: None,
-    //     });
-    //     pio.sm = sm;
-    // }
-
-    pub fn respond_to_poll(&mut self, timer: &Timer, delay: &mut Delay, report: &[u8]) {
-        // TODO: optimization to read the values 40us just before they are sent off
+    pub fn respond_to_poll_raw(&mut self, timer: &Timer, delay: &mut Delay, report: &[u8]) {
         delay.delay_us(40);
 
         self.recv(timer);
@@ -330,6 +301,37 @@ impl GamecubeController {
         delay.delay_us(4);
 
         self.send(report);
+    }
+
+    fn create_report_from_input(input: GamecubeInput) -> [u8; 8] {
+        #[rustfmt::skip]
+        let buttons1 = 
+              if input.a     { 0b0000_0001 } else { 0 }
+            | if input.b     { 0b0000_0010 } else { 0 }
+            | if input.x     { 0b0000_0100 } else { 0 }
+            | if input.y     { 0b0000_1000 } else { 0 }
+            | if input.start { 0b0001_0000 } else { 0 };
+
+        #[rustfmt::skip]
+        let buttons2 = 0b1000_0000
+            | if input.dpad_left  { 0b0000_0001 } else { 0 }
+            | if input.dpad_right { 0b0000_0010 } else { 0 }
+            | if input.dpad_down  { 0b0000_0100 } else { 0 }
+            | if input.dpad_up    { 0b0000_1000 } else { 0 }
+            | if input.z          { 0b0001_0000 } else { 0 }
+            | if input.l_digital  { 0b0010_0000 } else { 0 }
+            | if input.r_digital  { 0b0100_0000 } else { 0 };
+
+        [
+            buttons1,
+            buttons2,
+            input.stick_x,
+            input.stick_y,
+            input.cstick_x,
+            input.cstick_y,
+            input.l_analog,
+            input.r_analog,
+        ]
     }
 
     pub fn recv(&mut self, timer: &Timer) -> Option<u8> {

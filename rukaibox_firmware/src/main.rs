@@ -72,27 +72,33 @@ fn main() -> ! {
     }
 
     let mut input = Input {
-        start,
-        left: pins.gpio4.into_pull_up_input().into_dyn_pin(),
-        right: pins.gpio2.into_pull_up_input().into_dyn_pin(),
-        up: pins.gpio1.into_pull_up_input().into_dyn_pin(),
-        up2: pins.gpio17.into_pull_up_input().into_dyn_pin(),
-        down: pins.gpio3.into_pull_up_input().into_dyn_pin(),
-        c_left: pins.gpio13.into_pull_up_input().into_dyn_pin(),
-        c_right: pins.gpio16.into_pull_up_input().into_dyn_pin(),
-        c_up: pins.gpio12.into_pull_up_input().into_dyn_pin(),
-        c_down: pins.gpio15.into_pull_up_input().into_dyn_pin(),
+        left_hand_index: pins.gpio2.into_pull_up_input().into_dyn_pin(),
+        left_hand_middle: pins.gpio3.into_pull_up_input().into_dyn_pin(),
+        left_hand_ring: pins.gpio4.into_pull_up_input().into_dyn_pin(),
+        left_hand_pinky: pins.gpio5.into_pull_up_input().into_dyn_pin(),
 
-        a: pins.gpio14.into_pull_up_input().into_dyn_pin(),
-        b: pins.gpio26.into_pull_up_input().into_dyn_pin(),
-        l: pins.gpio5.into_pull_up_input().into_dyn_pin(),
-        r: pins.gpio27.into_pull_up_input().into_dyn_pin(),
-        x: pins.gpio21.into_pull_up_input().into_dyn_pin(),
-        y: pins.gpio22.into_pull_up_input().into_dyn_pin(),
-        z: pins.gpio19.into_pull_up_input().into_dyn_pin(),
-        taunt: pins.gpio20.into_pull_up_input().into_dyn_pin(),
-        x_modifier: pins.gpio6.into_pull_up_input().into_dyn_pin(),
-        y_modifier: pins.gpio7.into_pull_up_input().into_dyn_pin(),
+        left_hand_middle_2: pins.gpio17.into_pull_up_input().into_dyn_pin(),
+
+        left_hand_thumb_left: pins.gpio6.into_pull_up_input().into_dyn_pin(),
+        left_hand_thumb_right: pins.gpio7.into_pull_up_input().into_dyn_pin(),
+
+        right_hand_index: pins.gpio26.into_pull_up_input().into_dyn_pin(),
+        right_hand_middle: pins.gpio21.into_pull_up_input().into_dyn_pin(),
+        right_hand_ring: pins.gpio19.into_pull_up_input().into_dyn_pin(),
+        right_hand_pinky: pins.gpio1.into_pull_up_input().into_dyn_pin(),
+
+        right_hand_index_2: pins.gpio27.into_pull_up_input().into_dyn_pin(),
+        right_hand_middle_2: pins.gpio22.into_pull_up_input().into_dyn_pin(),
+        right_hand_ring_2: pins.gpio18.into_pull_up_input().into_dyn_pin(),
+        right_hand_pinky_2: pins.gpio20.into_pull_up_input().into_dyn_pin(),
+
+        right_hand_thumb_left: pins.gpio13.into_pull_up_input().into_dyn_pin(),
+        right_hand_thumb_right: pins.gpio16.into_pull_up_input().into_dyn_pin(),
+        right_hand_thumb_up: pins.gpio12.into_pull_up_input().into_dyn_pin(),
+        right_hand_thumb_down: pins.gpio15.into_pull_up_input().into_dyn_pin(),
+        right_hand_thumb_middle: pins.gpio14.into_pull_up_input().into_dyn_pin(),
+
+        start,
     };
 
     let mut counter = 0u32;

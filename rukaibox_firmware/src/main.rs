@@ -3,15 +3,18 @@
 
 mod gamecube_controller;
 mod input;
+mod project_plus;
+mod socd;
 
 use gamecube_controller::{ConsolePio, GamecubeController};
-use input::Input;
+use input::ButtonInput;
 // set the panic handler
 use panic_halt as _;
 
 use bsp::entry;
 use embedded_hal::digital::{InputPin, OutputPin};
 
+use project_plus::ProjectPlusMapping;
 // This board has the same pinout as a pico so the pico bsp is handy.
 use rp_pico as bsp;
 use rp2040_hal::{Timer, rom_data::reset_to_usb_boot};
@@ -71,7 +74,7 @@ fn main() -> ! {
         delay.delay_ms(100);
     }
 
-    let mut input = Input {
+    let input = ButtonInput {
         left_hand_index: pins.gpio2.into_pull_up_input().into_dyn_pin(),
         left_hand_middle: pins.gpio3.into_pull_up_input().into_dyn_pin(),
         left_hand_ring: pins.gpio4.into_pull_up_input().into_dyn_pin(),
@@ -101,6 +104,8 @@ fn main() -> ! {
         start,
     };
 
+    let mut mapping = ProjectPlusMapping::new(input);
+
     let mut counter = 0u32;
     let pio = ConsolePio::new(pins.gpio28, pac.PIO0, &mut pac.RESETS, clocks);
     if let Ok(mut gamecube_controller) = GamecubeController::try_new(pio, &timer, &mut delay) {
@@ -113,7 +118,7 @@ fn main() -> ! {
             }
 
             gamecube_controller.wait_for_poll_start(&timer, &mut delay);
-            let report = input.poll();
+            let report = mapping.poll();
             gamecube_controller.respond_to_poll(&timer, &mut delay, report);
         }
     } else {
@@ -125,7 +130,7 @@ fn main() -> ! {
             delay.delay_ms(2000);
 
             // we are probably connected to a PC so allow flashing via start button
-            if input.start.is_low().unwrap_or(true) {
+            if mapping.input.start.is_low().unwrap_or(true) {
                 reset_to_usb_boot(0, 0);
             }
         }

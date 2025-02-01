@@ -1,0 +1,86 @@
+// WARNING
+// This configuration file is aspirational and does not do anything yet.
+
+profiles {
+    projectplus {
+        // On startup the controller will start in the first defined profile.
+        // The button combination listed here can be used to jump to this specific profile.
+        activation_combination: mod_x + stick_left + start
+
+        // Which firmware level profile logic to use.
+        // Controls things like the exact control stick values used under different circumstances.
+        // And any other hardcoded special case logic.
+        logic: projectplus
+
+        // Possible values:
+        // * second_priority - when both directions are pressed, the second direction to be pressed is activated.
+        // * neutral - when both directions are pressed, neither are activated
+        socd: second_priority
+
+        left_hand {
+            pinky: shield
+            ring: stick_left
+            middle: stick_down
+            index: stick_right
+
+            middle_2: stick_up
+
+            thumb_left: mod_x
+            thumb_right: mod_y
+        }
+
+        right_hand {
+            index: b
+            middle: x
+            ring: z
+            pinky: stick_up
+
+            index_2: r_digital
+            middle_2: y
+            ring_2: r_analog
+            pinky_2: dpad_up
+
+            thumb_left: cstick_left
+            thumb_right: cstick_right
+            thumb_up: cstick_up
+            thumb_down: cstick_down
+            thumb_middle: a
+        }
+    }
+
+    rivals2 {
+        activation_combination: mod_x + stick_right + start
+        logic: rivals2
+        socd: second_priority
+
+        left_hand {
+            pinky: shield
+            ring: stick_left
+            middle: stick_down
+            index: stick_right
+
+            middle_2: stick_up
+
+            thumb_left: mod_x
+            thumb_right: mod_y
+        }
+
+        right_hand {
+            index: b
+            middle: x
+            ring: z
+            pinky: stick_up
+
+            index_2: r_digital
+            middle_2: y
+            ring_2: r_analog
+            pinky_2: dpad_up
+
+            thumb_left: cstick_left
+            thumb_right: cstick_right
+            thumb_up: cstick_up
+            thumb_down: cstick_down
+            thumb_middle: a
+        }
+    }
+}

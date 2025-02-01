@@ -92,8 +92,8 @@ fn main() -> ! {
 
         right_hand_index_2: pins.gpio27.into_pull_up_input().into_dyn_pin(),
         right_hand_middle_2: pins.gpio22.into_pull_up_input().into_dyn_pin(),
-        right_hand_ring_2: pins.gpio18.into_pull_up_input().into_dyn_pin(),
-        right_hand_pinky_2: pins.gpio20.into_pull_up_input().into_dyn_pin(),
+        right_hand_ring_2: pins.gpio20.into_pull_up_input().into_dyn_pin(),
+        right_hand_pinky_2: pins.gpio18.into_pull_up_input().into_dyn_pin(),
 
         right_hand_thumb_left: pins.gpio13.into_pull_up_input().into_dyn_pin(),
         right_hand_thumb_right: pins.gpio16.into_pull_up_input().into_dyn_pin(),

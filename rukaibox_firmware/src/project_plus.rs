@@ -176,8 +176,7 @@ impl ProjectPlusMapping {
         // Derive C stick values
 
         let (cstick_x_offset, cstick_y_offset) = if mod_x && cstick_horizontal {
-            // TODO: This uses Cstick for X but regular stick for Y
-            // This is to match haystack firmware but not sure if this was intentional on their part or not.
+            // Allow for angled smash attacks
             ((cstick_x_direction * 65), (stick_y_direction * 23))
         } else {
             ((cstick_x_direction * 100), (cstick_y_direction * 100))

@@ -6,6 +6,11 @@ pub struct SocdState {
     pub prev_down: bool,
     pub prev_left: bool,
     pub prev_right: bool,
+
+    pub prev_cstick_up: bool,
+    pub prev_cstick_down: bool,
+    pub prev_cstick_left: bool,
+    pub prev_cstick_right: bool,
 }
 
 #[allow(dead_code)]

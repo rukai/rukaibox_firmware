@@ -48,17 +48,21 @@ impl ProjectPlusMapping {
             (false, true) => 0,
             _ => 128,
         };
-        let cstick_x = match (
+        let cstick_x = match self.socd_type.resolve(
             self.input.right_hand_thumb_left.is_low().unwrap(),
             self.input.right_hand_thumb_right.is_low().unwrap(),
+            &mut self.socd_state.prev_cstick_left,
+            &mut self.socd_state.prev_cstick_right,
         ) {
             (true, false) => 0,
             (false, true) => 255,
             _ => 128,
         };
-        let cstick_y = match (
+        let cstick_y = match self.socd_type.resolve(
             self.input.right_hand_thumb_up.is_low().unwrap(),
             self.input.right_hand_thumb_down.is_low().unwrap(),
+            &mut self.socd_state.prev_cstick_up,
+            &mut self.socd_state.prev_cstick_down,
         ) {
             (true, false) => 255,
             (false, true) => 0,

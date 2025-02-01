@@ -18,8 +18,6 @@ use rp2040_hal::{
 
 use bsp::hal::clocks::Clock;
 
-use crate::input::GamecubeInput;
-
 pub struct ConsolePio {
     data_pin: Pin<Gpio28, FunctionPio0, PullDown>,
     tx: Tx<(PIO0, SM0)>,
@@ -201,28 +199,28 @@ impl GamecubeController {
                 // set perfect deadzone, we have no analog sticks
                 // Apparently gc adapter ignores this though and uses the first poll response instead.
                 controller.send(&[
-                    0,             // butons1
-                    0b1000_0000,   // butons2
-                    128,           // stick x
-                    128,           // stick y
-                    128,           // cstick x
-                    128,           // cstick y
-                    0,             // left trigger
-                    0,             // right trigger
-                    0,             // reserved
-                    0,             // reserved
+                    0,           // butons1
+                    0b1000_0000, // butons2
+                    128,         // stick x
+                    128,         // stick y
+                    128,         // cstick x
+                    128,         // cstick y
+                    0,           // left trigger
+                    0,           // right trigger
+                    0,           // reserved
+                    0,           // reserved
                 ]);
             }
             Some(GamecubeCommand::Poll) => {
                 let report = [
-                    0,             // butons1
-                    0b1000_0000,   // butons2
-                    128,           // stick x
-                    128,           // stick y
-                    128,           // cstick x
-                    128,           // cstick y
-                    0,             // left trigger
-                    0,             // right trigger
+                    0,           // butons1
+                    0b1000_0000, // butons2
+                    128,         // stick x
+                    128,         // stick y
+                    128,         // cstick x
+                    128,         // cstick y
+                    0,           // left trigger
+                    0,           // right trigger
                 ];
                 controller.respond_to_poll_raw(timer, delay, &report);
             }
@@ -290,7 +288,7 @@ impl GamecubeController {
     }
 
     pub fn respond_to_poll(&mut self, timer: &Timer, delay: &mut Delay, input: GamecubeInput) {
-        self.respond_to_poll_raw(timer, delay, &Self::create_report_from_input(input));
+        self.respond_to_poll_raw(timer, delay, &input.create_report());
     }
 
     pub fn respond_to_poll_raw(&mut self, timer: &Timer, delay: &mut Delay, report: &[u8]) {
@@ -301,37 +299,6 @@ impl GamecubeController {
         delay.delay_us(4);
 
         self.send(report);
-    }
-
-    fn create_report_from_input(input: GamecubeInput) -> [u8; 8] {
-        #[rustfmt::skip]
-        let buttons1 = 
-              if input.a     { 0b0000_0001 } else { 0 }
-            | if input.b     { 0b0000_0010 } else { 0 }
-            | if input.x     { 0b0000_0100 } else { 0 }
-            | if input.y     { 0b0000_1000 } else { 0 }
-            | if input.start { 0b0001_0000 } else { 0 };
-
-        #[rustfmt::skip]
-        let buttons2 = 0b1000_0000
-            | if input.dpad_left  { 0b0000_0001 } else { 0 }
-            | if input.dpad_right { 0b0000_0010 } else { 0 }
-            | if input.dpad_down  { 0b0000_0100 } else { 0 }
-            | if input.dpad_up    { 0b0000_1000 } else { 0 }
-            | if input.z          { 0b0001_0000 } else { 0 }
-            | if input.l_digital  { 0b0010_0000 } else { 0 }
-            | if input.r_digital  { 0b0100_0000 } else { 0 };
-
-        [
-            buttons1,
-            buttons2,
-            input.stick_x,
-            input.stick_y,
-            input.cstick_x,
-            input.cstick_y,
-            input.l_analog,
-            input.r_analog,
-        ]
     }
 
     pub fn recv(&mut self, timer: &Timer) -> Option<u8> {
@@ -391,5 +358,59 @@ impl GamecubeCommand {
             0x40 => GamecubeCommand::Poll,
             _ => GamecubeCommand::Unknown,
         }
+    }
+}
+
+pub struct GamecubeInput {
+    pub start: bool,
+    pub a: bool,
+    pub b: bool,
+    pub x: bool,
+    pub y: bool,
+    pub z: bool,
+    pub dpad_up: bool,
+    pub dpad_down: bool,
+    pub dpad_left: bool,
+    pub dpad_right: bool,
+    pub l_digital: bool,
+    pub r_digital: bool,
+    pub stick_x: u8,
+    pub stick_y: u8,
+    pub cstick_x: u8,
+    pub cstick_y: u8,
+    pub l_analog: u8,
+    pub r_analog: u8,
+}
+
+impl GamecubeInput {
+    fn create_report(&self) -> [u8; 8] {
+        #[rustfmt::skip]
+        let buttons1 =
+              if self.a     { 0b0000_0001 } else { 0 }
+            | if self.b     { 0b0000_0010 } else { 0 }
+            | if self.x     { 0b0000_0100 } else { 0 }
+            | if self.y     { 0b0000_1000 } else { 0 }
+            | if self.start { 0b0001_0000 } else { 0 };
+
+        #[rustfmt::skip]
+        let buttons2 = 0b1000_0000
+            | if self.dpad_left  { 0b0000_0001 } else { 0 }
+            | if self.dpad_right { 0b0000_0010 } else { 0 }
+            | if self.dpad_down  { 0b0000_0100 } else { 0 }
+            | if self.dpad_up    { 0b0000_1000 } else { 0 }
+            | if self.z          { 0b0001_0000 } else { 0 }
+            | if self.l_digital  { 0b0010_0000 } else { 0 }
+            | if self.r_digital  { 0b0100_0000 } else { 0 };
+
+        [
+            buttons1,
+            buttons2,
+            self.stick_x,
+            self.stick_y,
+            self.cstick_x,
+            self.cstick_y,
+            self.l_analog,
+            self.r_analog,
+        ]
     }
 }

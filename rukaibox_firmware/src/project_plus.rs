@@ -1,7 +1,8 @@
 use embedded_hal::digital::InputPin;
 
 use crate::{
-    input::{ButtonInput, GamecubeInput},
+    gamecube_controller::GamecubeInput,
+    input::ButtonInput,
     socd::{SocdState, SocdType},
 };
 
@@ -16,7 +17,7 @@ impl ProjectPlusMapping {
         ProjectPlusMapping {
             input,
             socd_state: Default::default(),
-            socd_type: SocdType::Neutral,
+            socd_type: SocdType::SecondInputPriority,
         }
     }
 

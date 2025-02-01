@@ -32,24 +32,3 @@ pub struct ButtonInput {
 
     pub start: Pin<DynPinId, FunctionSioInput, PullUp>,
 }
-
-pub struct GamecubeInput {
-    pub start: bool,
-    pub a: bool,
-    pub b: bool,
-    pub x: bool,
-    pub y: bool,
-    pub z: bool,
-    pub dpad_up: bool,
-    pub dpad_down: bool,
-    pub dpad_left: bool,
-    pub dpad_right: bool,
-    pub l_digital: bool,
-    pub r_digital: bool,
-    pub stick_x: u8,
-    pub stick_y: u8,
-    pub cstick_x: u8,
-    pub cstick_y: u8,
-    pub l_analog: u8,
-    pub r_analog: u8,
-}

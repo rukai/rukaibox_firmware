@@ -159,12 +159,10 @@ impl ProjectPlusMapping {
             } else {
                 (0, 0)
             }
+        } else if diagonal && stick_up {
+            ((stick_x_direction * 83), (stick_y_direction * 93))
         } else {
-            if diagonal && stick_up {
-                ((stick_x_direction * 83), (stick_y_direction * 93))
-            } else {
-                ((stick_x_direction * 100), (stick_y_direction * 100))
-            }
+            ((stick_x_direction * 100), (stick_y_direction * 100))
         };
         let stick_x = (128 + stick_x_offset) as u8;
         let stick_y = (128 + stick_y_offset) as u8;

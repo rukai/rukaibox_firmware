@@ -21,6 +21,7 @@ A firmware for hitbox controllers, supporting the GRAM slim and other RP2040 bas
 
 * Profiles for other platform fighter games
 * N64 support
+* HID controller support
 * HID keyboard support
 
 ## Non-Goals

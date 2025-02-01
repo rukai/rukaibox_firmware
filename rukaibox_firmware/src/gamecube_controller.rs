@@ -139,6 +139,9 @@ impl ConsolePio {
         //.set_wrap()
         ;
 
+        // TODO: this math is a direct port from joybus-pio.
+        //       but with the non-deprecated clock_divisor_fixed_point method the math looks weird but is still equivalent.
+        //       If I can print the values with a debugger I could probably understand it well enough to simplify.
         let bitrate = 250000;
         let cycles_per_bit = 10 + 20 + 10;
         let divisor = clocks.system_clock.freq().to_Hz() as f32 / (cycles_per_bit * bitrate) as f32;
@@ -155,7 +158,7 @@ impl ConsolePio {
             .in_shift_direction(ShiftDirection::Left)
             .autopush(true)
             .push_threshold(8)
-            .clock_divisor(divisor)
+            .clock_divisor_fixed_point(divisor as u16, (divisor * 256.0) as u8)
             .build(sm0);
         let sm = sm.start();
 
@@ -331,7 +334,7 @@ impl GamecubeController {
 
         for (i, value) in values.iter().enumerate() {
             let stop = if i == values.len() - 1 { 1 } else { 0 };
-            let word = ((*value as u32) << 24) | (stop as u32) << 23;
+            let word = ((*value as u32) << 24) | ((stop as u32) << 23);
 
             while self.pio.tx.is_full() {}
             self.pio.tx.write(word);

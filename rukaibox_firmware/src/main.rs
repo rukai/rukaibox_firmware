@@ -1,29 +1,30 @@
 #![no_std]
 #![no_main]
 
-mod gamecube_controller;
 mod input;
 mod project_plus;
 mod socd;
 
-use gamecube_controller::{ConsolePio, GamecubeController};
+use cortex_m::delay::Delay;
 use input::ButtonInput;
+use joybus_pio::{GamecubeController, JoybusPio};
 // set the panic handler
-use panic_halt as _;
-
 use bsp::entry;
 use embedded_hal::digital::{InputPin, OutputPin};
-
+use panic_halt as _;
 use project_plus::ProjectPlusMapping;
 // This board has the same pinout as a pico so the pico bsp is handy.
-use rp_pico as bsp;
-use rp2040_hal::{Timer, rom_data::reset_to_usb_boot};
-
 use bsp::hal::{
     clocks::{Clock, init_clocks_and_plls},
     pac,
     sio::Sio,
     watchdog::Watchdog,
+};
+use rp_pico as bsp;
+use rp2040_hal::{
+    Timer,
+    gpio::{FunctionSio, Pin, PullDown, SioOutput, bank0::Gpio25},
+    rom_data::reset_to_usb_boot,
 };
 
 #[entry]
@@ -104,35 +105,70 @@ fn main() -> ! {
         start,
     };
 
-    let mut mapping = ProjectPlusMapping::new(input);
+    let mapping = ProjectPlusMapping::new(input);
 
+    let pio = JoybusPio::new(pins.gpio28, pac.PIO0, &mut pac.RESETS, clocks);
+    match GamecubeController::try_new(pio, &timer, &mut delay) {
+        Ok(gamecube_controller) => {
+            run_gamecube_loop(led_pin, gamecube_controller, &timer, &mut delay, mapping);
+        }
+        Err(_pio) => {
+            run_pc_loop(led_pin, &mut delay, mapping);
+        }
+    }
+}
+
+fn run_gamecube_loop(
+    mut led_pin: Pin<Gpio25, FunctionSio<SioOutput>, PullDown>,
+    mut gamecube_controller: GamecubeController,
+    timer: &Timer,
+    delay: &mut Delay,
+    mut mapping: ProjectPlusMapping,
+) -> ! {
     let mut counter = 0u32;
-    let pio = ConsolePio::new(pins.gpio28, pac.PIO0, &mut pac.RESETS, clocks);
-    if let Ok(mut gamecube_controller) = GamecubeController::try_new(pio, &timer, &mut delay) {
-        loop {
-            counter += 1;
-            if counter % 10 < 5 {
-                led_pin.set_high().unwrap();
-            } else {
-                led_pin.set_low().unwrap();
-            }
-
-            gamecube_controller.wait_for_poll_start(&timer, &mut delay);
-            let report = mapping.poll();
-            gamecube_controller.respond_to_poll(&timer, &mut delay, report);
-        }
-    } else {
-        loop {
-            // slowly blink pins to show gamecube not detected
+    loop {
+        counter += 1;
+        if counter % 10 < 5 {
             led_pin.set_high().unwrap();
-            delay.delay_ms(2000);
+        } else {
             led_pin.set_low().unwrap();
-            delay.delay_ms(2000);
-
-            // we are probably connected to a PC so allow flashing via start button
-            if mapping.input.start.is_low().unwrap_or(true) {
-                reset_to_usb_boot(0, 0);
-            }
         }
+
+        gamecube_controller.wait_for_poll_start(timer, delay);
+        let report = mapping.poll();
+        gamecube_controller.respond_to_poll(timer, delay, report);
+    }
+}
+
+fn run_pc_loop(
+    mut led_pin: Pin<Gpio25, FunctionSio<SioOutput>, PullDown>,
+    delay: &mut Delay,
+    mut mapping: ProjectPlusMapping,
+) -> ! {
+    let mut blink = true;
+    loop {
+        // slowly blink pins to show gamecube not detected
+        blink = !blink;
+        if blink {
+            led_pin.set_high().unwrap();
+        } else {
+            led_pin.set_low().unwrap();
+        }
+
+        // we are probably connected to a PC so allow flashing via start button
+        if mapping.input.start.is_low().unwrap_or(true) {
+            reset_to_usb_boot(0, 0);
+        }
+
+        // Reattempt gamecube connection.
+        // TODO: sounded like a cool idea, but ran into problems and not sure I want it anyway.
+        // match GamecubeController::try_new(pio, timer, delay) {
+        //     Ok(gamecube_controller) => {
+        //         run_gamecube_loop(led_pin, gamecube_controller, timer, delay, mapping);
+        //     }
+        //     Err(_pio) => pio = _pio,
+        // }
+
+        delay.delay_ms(1000);
     }
 }

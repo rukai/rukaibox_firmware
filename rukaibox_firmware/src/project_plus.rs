@@ -1,10 +1,9 @@
-use embedded_hal::digital::InputPin;
-
 use crate::{
-    gamecube_controller::GamecubeInput,
     input::ButtonInput,
     socd::{SocdState, SocdType},
 };
+use embedded_hal::digital::InputPin;
+use joybus_pio::GamecubeInput;
 
 pub struct ProjectPlusMapping {
     pub input: ButtonInput,

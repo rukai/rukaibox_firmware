@@ -33,7 +33,7 @@ impl ProjectPlusMapping {
         let x = self.input.right_hand_middle.is_low().unwrap();
         let y = self.input.right_hand_middle_2.is_low().unwrap();
         let z = self.input.right_hand_ring.is_low().unwrap();
-        let dpad_up = self.input.right_hand_pinky_2.is_low().unwrap();
+        let dpad_up_shortcut = self.input.right_hand_pinky_2.is_low().unwrap();
         let r_analog = self.input.right_hand_ring_2.is_low().unwrap();
         let l_digital = self.input.left_hand_pinky.is_low().unwrap();
         let r_digital = self.input.right_hand_index_2.is_low().unwrap();
@@ -186,6 +186,21 @@ impl ProjectPlusMapping {
         let l_analog = 0;
         let r_analog = if r_analog { 49 } else { 0 };
 
+        // Derive dpad values
+
+        let dpad_up = (mod_x && mod_y && cstick_up) || dpad_up_shortcut;
+        let dpad_down = mod_x && mod_y && cstick_down;
+        let dpad_left = mod_x && mod_y && cstick_left;
+        let dpad_right = mod_x && mod_y && cstick_right;
+
+        // disable cstick when dpad in use
+        let cstick_x = if dpad_left || dpad_right {
+            128
+        } else {
+            cstick_x
+        };
+        let cstick_y = if dpad_up || dpad_down { 128 } else { cstick_y };
+
         GamecubeInput {
             start,
             a,
@@ -194,9 +209,9 @@ impl ProjectPlusMapping {
             y,
             z,
             dpad_up,
-            dpad_down: false,
-            dpad_left: false,
-            dpad_right: false,
+            dpad_down,
+            dpad_left,
+            dpad_right,
             l_digital,
             r_digital,
             stick_x,

@@ -1,100 +1,79 @@
-use miette::Result;
+#![no_std]
 
-impl Config {
-    pub fn parse() -> Result<Self> {
-        let config = include_str!("../../config.kdl");
-        Ok(knus::parse::<Config>("config.kdl", config)?)
-    }
-}
+use arrayvec::ArrayVec;
+use rkyv::{Archive, Deserialize, Serialize};
 
-#[derive(knus::Decode, Debug)]
+#[derive(Archive, Deserialize, Serialize, Debug, PartialEq, Default)]
+#[rkyv(derive(Debug))]
 pub struct Config {
-    #[knus(child, unwrap(children))]
-    pub profiles: Vec<Profile>,
+    pub profiles: ArrayVec<Profile, 10>,
 }
 
-#[derive(knus::Decode, Debug)]
+#[derive(Archive, Deserialize, Serialize, Debug, PartialEq, Default)]
+#[rkyv(derive(Debug))]
 pub struct Profile {
-    #[knus(child, unwrap(argument))]
     pub default: bool,
-    //#[knus(child, unwrap(arguments))]
-    //pub activation_combination: Vec<PhysicalButton>,
-    #[knus(child, unwrap(argument))]
+    pub activation_combination: ArrayVec<PhysicalButton, 10>,
     pub logic: BaseLogic,
-    #[knus(child, unwrap(argument))]
     pub socd: SocdType,
-    #[knus(child)]
     pub left_hand: LeftHandMap,
-    #[knus(child)]
     pub right_hand: RightHandMap,
 }
 
-#[derive(knus::Decode, Debug)]
+#[derive(Archive, Deserialize, Serialize, Debug, PartialEq, Default)]
+#[rkyv(derive(Debug))]
 pub struct LeftHandMap {
-    #[knus(child, unwrap(argument))]
     pub pinky: LogicalButton,
-    #[knus(child, unwrap(argument))]
     pub ring: LogicalButton,
-    #[knus(child, unwrap(argument))]
     pub middle: LogicalButton,
-    #[knus(child, unwrap(argument))]
     pub index: LogicalButton,
 
-    #[knus(child, unwrap(argument))]
     pub middle_2: LogicalButton,
 
-    #[knus(child, unwrap(argument))]
     pub thumb_left: LogicalButton,
-    #[knus(child, unwrap(argument))]
     pub thumb_right: LogicalButton,
 }
 
-#[derive(knus::Decode, Debug)]
+#[derive(Archive, Deserialize, Serialize, Debug, PartialEq, Default)]
+#[rkyv(derive(Debug))]
 pub struct RightHandMap {
-    #[knus(child, unwrap(argument))]
     pub index: LogicalButton,
-    #[knus(child, unwrap(argument))]
     pub middle: LogicalButton,
-    #[knus(child, unwrap(argument))]
     pub ring: LogicalButton,
-    #[knus(child, unwrap(argument))]
     pub pinky: LogicalButton,
 
-    #[knus(child, unwrap(argument))]
     pub index_2: LogicalButton,
-    #[knus(child, unwrap(argument))]
     pub middle_2: LogicalButton,
-    #[knus(child, unwrap(argument))]
     pub ring_2: LogicalButton,
-    #[knus(child, unwrap(argument))]
     pub pinky_2: LogicalButton,
 
-    #[knus(child, unwrap(argument))]
     pub thumb_left: LogicalButton,
-    #[knus(child, unwrap(argument))]
     pub thumb_right: LogicalButton,
-    #[knus(child, unwrap(argument))]
     pub thumb_up: LogicalButton,
-    #[knus(child, unwrap(argument))]
     pub thumb_down: LogicalButton,
-    #[knus(child, unwrap(argument))]
     pub thumb_middle: LogicalButton,
 }
 
-#[derive(knus::DecodeScalar, Debug)]
+#[derive(Archive, Deserialize, Serialize, Debug, PartialEq, Default)]
+#[rkyv(derive(Debug))]
 pub enum SocdType {
+    #[default]
     SecondInputPriority,
     Neutral,
 }
 
-#[derive(knus::DecodeScalar, Debug)]
+#[derive(Archive, Deserialize, Serialize, Debug, PartialEq, Default)]
+#[rkyv(derive(Debug))]
 pub enum BaseLogic {
+    #[default]
     ProjectPlus,
     Rivals2,
 }
 
-#[derive(knus::DecodeScalar, Debug)]
+#[derive(Archive, Deserialize, Serialize, Debug, PartialEq, Default)]
+#[rkyv(derive(Debug))]
 pub enum PhysicalButton {
+    #[default]
     Start,
     LeftHandPinky,
     LeftHandRing,
@@ -103,9 +82,11 @@ pub enum PhysicalButton {
     // TODO
 }
 
-#[derive(knus::DecodeScalar, Debug)]
+#[derive(Archive, Deserialize, Serialize, Debug, PartialEq, Default)]
+#[rkyv(derive(Debug))]
 pub enum LogicalButton {
     //LTrigger(u8),
+    #[default]
     LAnalog,
     RAnalog,
     LDigital,

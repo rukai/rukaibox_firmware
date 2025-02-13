@@ -1,11 +1,12 @@
 use goblin::elf::program_header::PT_LOAD;
 use miette::{IntoDiagnostic, Result};
 use picoboot_rs::{
-    PicobootConnection, TargetID, PICO_FLASH_START, PICO_PAGE_SIZE, PICO_SECTOR_SIZE,
-    PICO_STACK_POINTER,
+    PICO_FLASH_START, PICO_PAGE_SIZE, PICO_SECTOR_SIZE, PICO_STACK_POINTER, PicobootConnection,
+    TargetID,
 };
-use rukaibox_config::Config;
 use rusb::Context;
+
+mod config;
 
 fn bin_pages(fw: &[u8]) -> Vec<Vec<u8>> {
     let mut fw_pages: Vec<Vec<u8>> = vec![];
@@ -22,8 +23,8 @@ fn bin_pages(fw: &[u8]) -> Vec<Vec<u8>> {
     fw_pages
 }
 
-fn main() {
-    let config = Config::parse().unwrap();
+fn main() -> Result<()> {
+    let config = config::load()?;
     println!("{config:#?}");
 
     match Context::new() {
@@ -80,7 +81,8 @@ fn main() {
         Err(e) => panic!("Could not initialize libusb: {}", e),
     }
 
-    println!("Succesfully flashed!")
+    println!("Succesfully flashed!");
+    Ok(())
 }
 
 pub fn elf_to_bin(bytes: &[u8]) -> Result<Vec<u8>> {

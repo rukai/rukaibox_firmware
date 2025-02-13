@@ -10,6 +10,8 @@ rusb = "0.9.4"
 uf2-decode = "0.2.0"
 rukaibox_firmware = { path = "../rukaibox_firmware", artifact = "bin", target = "thumbv6m-none-eabi" }
 goblin = "0.9.3"
-miette = "7.4.0"
-knus = "3.2.0"
+miette = { version = "7.4.0", features = ["fancy"] }
 rukaibox_config = { path = "../rukaibox_config" }
+kdl = "6.3.3"
+arrayvec = "0.7.6"
+thiserror = "2.0.11"

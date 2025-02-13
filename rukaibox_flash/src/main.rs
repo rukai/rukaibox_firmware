@@ -4,6 +4,7 @@ use picoboot_rs::{
     PicobootConnection, TargetID, PICO_FLASH_START, PICO_PAGE_SIZE, PICO_SECTOR_SIZE,
     PICO_STACK_POINTER,
 };
+use rukaibox_config::Config;
 use rusb::Context;
 
 fn bin_pages(fw: &[u8]) -> Vec<Vec<u8>> {
@@ -22,6 +23,9 @@ fn bin_pages(fw: &[u8]) -> Vec<Vec<u8>> {
 }
 
 fn main() {
+    let config = Config::parse().unwrap();
+    println!("{config:#?}");
+
     match Context::new() {
         Ok(ctx) => {
             // create connection object

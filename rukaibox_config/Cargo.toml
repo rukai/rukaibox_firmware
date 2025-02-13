@@ -1,0 +1,9 @@
+[package]
+name = "rukaibox_config"
+version = "0.0.2"
+edition = "2024"
+repository = "https://github.com/rukai/rukaibox_firmware"
+
+[dependencies]
+miette = { version = "7.4.0", features = ["fancy"] }
+knus = { version = "3.2.0", git = "https://github.com/TheLostLambda/knus" }

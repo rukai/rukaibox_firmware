@@ -1,10 +1,10 @@
 use arrayvec::ArrayVec;
-use kdl::{KdlDocument, KdlError, KdlNode};
-use miette::{Diagnostic, NamedSource, SourceSpan};
-use rukaibox_config::{BaseLogic, Config, LeftHandMap, Profile};
+use kdl::{KdlDocument, KdlEntry, KdlError, KdlNode};
+use kdl_config_derive::KdlConfig;
+use miette::{Diagnostic, NamedSource, SourceOffset, SourceSpan};
 use thiserror::Error;
 
-pub fn load() -> miette::Result<Config> {
+pub fn load() -> miette::Result<ConfigParsed> {
     let input = NamedSource::new("config.kdl", load_text()?);
     // TODO: upstream a way to tell KDL parser what the filename is.
     let kdl: KdlDocument = input.inner().parse()?;
@@ -19,112 +19,28 @@ pub fn load() -> miette::Result<Config> {
             .map(|x| x.nodes())
             .unwrap_or_default()
         {
-            if let [
-                Some(_default),
-                Some(_activation_combination),
-                Some(logic),
-                Some(_socd),
-                Some(left_hand),
-                Some(_right_hand),
-            ] = get_children(
+            profiles.push(KdlConfig::parse_as_node(
                 input.clone(),
                 profile_node,
-                [
-                    "default",
-                    "activation_combination",
-                    "logic",
-                    "socd",
-                    "left-hand",
-                    "right-hand",
-                ],
                 &mut diag,
-            ) {
-                let logic = parse_logic(input.clone(), logic, &mut diag);
-                let left_hand = parse_left_hand(input.clone(), left_hand, &mut diag);
-                if let (Some(logic), Some(left_hand)) = (logic, left_hand) {
-                    profiles.push(Profile {
-                        default: Default::default(),
-                        activation_combination: Default::default(),
-                        logic,
-                        socd: Default::default(),
-                        left_hand,
-                        right_hand: Default::default(),
-                    });
-                }
-            }
+            ));
         }
     }
     if diag.is_empty() {
-        Ok(Config { profiles })
+        Ok(ConfigParsed {
+            profiles: Parsed {
+                value: profiles,
+                full_span: profiles_node.unwrap().span(),
+                name_span: profiles_node.unwrap().span(),
+                valid: true,
+            },
+        })
     } else {
         Err(ParseError {
             input,
             diagnostics: diag,
         }
         .into())
-    }
-}
-
-fn parse_logic(
-    input: NamedSource<String>,
-    node: &KdlNode,
-    diagnostics: &mut Vec<ParseDiagnostic>,
-) -> Option<BaseLogic> {
-    let entry_len = node.entries().len();
-    if node.entries().len() == 1 {
-        Some(BaseLogic::ProjectPlus)
-    } else {
-        let extra_entries: Vec<String> = node
-            .entries()
-            .iter()
-            .skip(1)
-            .map(|x| x.value().to_string())
-            .collect();
-        diagnostics.push(ParseDiagnostic {
-            input: input.clone(),
-            span: node.span(),
-            message: Some(format!(
-                "Node should only contain 1 entry but contained {entry_len:?}"
-            )),
-            label: None,
-            help: Some(format!(
-                "Consider removing the extra entries {extra_entries:?}",
-            )),
-            severity: miette::Severity::Error,
-        });
-        None
-    }
-}
-
-fn parse_left_hand(
-    input: NamedSource<String>,
-    node: &KdlNode,
-    diagnostics: &mut Vec<ParseDiagnostic>,
-) -> Option<LeftHandMap> {
-    match get_children(
-        input.clone(),
-        node,
-        [
-            "pinky",
-            "ring",
-            "middle",
-            "index",
-            "middle-2",
-            "thumb-left",
-            "thumb-right",
-        ],
-        diagnostics,
-    ) {
-        [
-            Some(_pinky),
-            Some(_ring),
-            Some(_middle),
-            Some(_index),
-            Some(_middle_2),
-            Some(_thumb_left),
-            Some(_thumb_right),
-        ] => Some(Default::default()),
-        _ => None,
     }
 }
 
@@ -239,4 +155,207 @@ pub struct ParseDiagnostic {
     /// Severity level for the Diagnostic.
     #[diagnostic(severity)]
     pub severity: miette::Severity,
+}
+
+/// manually implement for now, derive this later
+pub trait KdlConfig {
+    fn parse_as_node(
+        source: NamedSource<String>,
+        node: &KdlNode,
+        diagnostics: &mut Vec<ParseDiagnostic>,
+    ) -> Parsed<Self>
+    where
+        Self: Sized;
+    fn parse_as_entry(
+        _source: NamedSource<String>,
+        entry: &KdlEntry,
+        _diagnostics: &mut Vec<ParseDiagnostic>,
+    ) -> Parsed<Self>
+    where
+        Self: Sized,
+    {
+        let type_name = std::any::type_name::<Self>();
+        let entry = entry.to_string();
+        unimplemented!(
+            "Tried to parse entry {entry:?} as {type_name}. However {type_name} does not have an implementation for parse_as_entry."
+        )
+    }
+}
+
+impl<T: KdlConfig, const CAP: usize> KdlConfig for ArrayVec<Parsed<T>, CAP> {
+    fn parse_as_node(
+        source: NamedSource<String>,
+        node: &KdlNode,
+        diagnostics: &mut Vec<ParseDiagnostic>,
+    ) -> Parsed<Self>
+    where
+        Self: Sized,
+    {
+        let mut array = ArrayVec::new();
+        // TODO: provide "children as a list" as an alternative parsing style
+        for entry in node.entries() {
+            array.push(KdlConfig::parse_as_entry(
+                source.clone(),
+                entry,
+                diagnostics,
+            ))
+        }
+        Parsed {
+            value: array,
+            full_span: node.span(),
+            name_span: node.span(),
+            valid: true,
+        }
+    }
+}
+
+pub struct Parsed<T> {
+    /// The actual parsed value
+    pub value: T,
+    /// The span of the entire KDL node
+    pub full_span: SourceSpan,
+    /// The span of the KDL nodes identifier
+    pub name_span: SourceSpan,
+    /// When a field cannot be parsed, this field is set to `false` and `value` is set to `Default::default`
+    pub valid: bool,
+}
+
+impl<T: std::fmt::Debug> std::fmt::Debug for Parsed<T> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("Parsed")
+            .field("value", &self.value)
+            .field("valid", &self.valid)
+            .finish()
+    }
+}
+
+impl<T: Default> Default for Parsed<T> {
+    fn default() -> Self {
+        Self {
+            value: Default::default(),
+            full_span: SourceSpan::new(SourceOffset::from_location("", 0, 0), 0),
+            name_span: SourceSpan::new(SourceOffset::from_location("", 0, 0), 0),
+            valid: Default::default(),
+        }
+    }
+}
+
+#[derive(Default, Debug)]
+pub struct ConfigParsed {
+    pub profiles: Parsed<ArrayVec<Parsed<ProfileParsed>, 10>>,
+}
+
+#[derive(KdlConfig, Default, Debug)]
+pub struct ProfileParsed {
+    //pub default: Parsed<bool>,
+    pub activation_combination: Parsed<ArrayVec<Parsed<PhysicalButtonParsed>, 10>>,
+    pub logic: Parsed<BaseLogicParsed>,
+    pub socd: Parsed<SocdTypeParsed>,
+    pub left_hand: Parsed<LeftHandMapParsed>,
+    pub right_hand: Parsed<RightHandMapParsed>,
+}
+
+#[derive(KdlConfig, Default, Debug)]
+pub struct LeftHandMapParsed {
+    pub pinky: Parsed<LogicalButtonParsed>,
+    pub ring: Parsed<LogicalButtonParsed>,
+    pub middle: Parsed<LogicalButtonParsed>,
+    pub index: Parsed<LogicalButtonParsed>,
+
+    pub middle_2: Parsed<LogicalButtonParsed>,
+
+    pub thumb_left: Parsed<LogicalButtonParsed>,
+    pub thumb_right: Parsed<LogicalButtonParsed>,
+}
+
+#[derive(KdlConfig, Default, Debug)]
+pub struct RightHandMapParsed {
+    pub index: Parsed<LogicalButtonParsed>,
+    pub middle: Parsed<LogicalButtonParsed>,
+    pub ring: Parsed<LogicalButtonParsed>,
+    pub pinky: Parsed<LogicalButtonParsed>,
+
+    pub index_2: Parsed<LogicalButtonParsed>,
+    pub middle_2: Parsed<LogicalButtonParsed>,
+    pub ring_2: Parsed<LogicalButtonParsed>,
+    pub pinky_2: Parsed<LogicalButtonParsed>,
+
+    pub thumb_left: Parsed<LogicalButtonParsed>,
+    pub thumb_right: Parsed<LogicalButtonParsed>,
+    pub thumb_up: Parsed<LogicalButtonParsed>,
+    pub thumb_down: Parsed<LogicalButtonParsed>,
+    pub thumb_middle: Parsed<LogicalButtonParsed>,
+}
+
+#[derive(KdlConfig, Default, Debug)]
+pub enum SocdTypeParsed {
+    #[default]
+    SecondInputPriority,
+    Neutral,
+}
+
+#[derive(KdlConfig, Default, Debug)]
+pub enum BaseLogicParsed {
+    #[default]
+    ProjectPlus,
+    Rivals2,
+}
+
+#[derive(KdlConfig, Default, Debug)]
+pub enum PhysicalButtonParsed {
+    #[default]
+    Start,
+    LeftHandPinky,
+    LeftHandRing,
+    LeftHandMiddle,
+    LeftHandIndex,
+
+    LeftHandMiddle2,
+
+    LeftHandThumbLeft,
+    LeftHandThumbRight,
+
+    RightHandIndex,
+    RightHandMiddle,
+    RightHandRing,
+    RightHandPink,
+
+    RightHandIndex2,
+    RightHandMiddle2,
+    RightHandRing2,
+    RightHandPink2,
+
+    RightHandThumbLeft,
+    RightHandThumbRight,
+    RightHandThumbUp,
+    RightHandThumbDown,
+    RightHandThumbMiddle,
+}
+
+#[derive(KdlConfig, Default, Debug)]
+pub enum LogicalButtonParsed {
+    #[default]
+    LAnalog,
+    RAnalog,
+    LDigital,
+    RDigital,
+    StickUp,
+    StickDown,
+    StickLeft,
+    StickRight,
+    CstickUp,
+    CstickDown,
+    CstickLeft,
+    CstickRight,
+    DpadUp,
+    DpadDown,
+    DpadLeft,
+    DpadRight,
+    ModX,
+    ModY,
+    A,
+    B,
+    X,
+    Y,
+    Z,
 }

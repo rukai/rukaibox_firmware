@@ -6,11 +6,11 @@ profiles {
     profile {
         // There must be exactly one profile with default set to true.
         // On startup the controller will start in the profile with default set to true.
-        default #true
+        //default #true
 
         // The button combination listed here can be used to jump to this specific profile.
         // A maximum of 10 buttons can be used.
-        activation_combination left-hand-thumb-left left-hand-pinky start
+        activation-combination start left-hand-thumb-left left-hand-pinky
 
         // Which firmware level profile logic to use.
         // Controls things like the exact control stick values used under different circumstances.
@@ -57,8 +57,8 @@ profiles {
     }
 
     profile {
-        default #false
-        activation_combination mod-x stick-right start
+        //default #false
+        activation-combination start left-hand-thumb-left left-hand-middle
         logic rivals2
         socd second-input-priority
 

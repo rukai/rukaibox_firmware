@@ -1,5 +1,6 @@
 [workspace]
 members = [
+    "kdl_config_derive",
     "rukaibox_flash"
 ]
 exclude = [

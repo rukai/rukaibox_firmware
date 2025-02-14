@@ -13,5 +13,6 @@ goblin = "0.9.3"
 miette = { version = "7.4.0", features = ["fancy"] }
 rukaibox_config = { path = "../rukaibox_config" }
 kdl = "6.3.3"
+kdl_config_derive = { path = "../kdl_config_derive" }
 arrayvec = "0.7.6"
 thiserror = "2.0.11"

@@ -6,7 +6,7 @@ use picoboot_rs::{
 };
 use rusb::Context;
 
-mod config;
+pub mod config;
 
 fn bin_pages(fw: &[u8]) -> Vec<Vec<u8>> {
     let mut fw_pages: Vec<Vec<u8>> = vec![];

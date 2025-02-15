@@ -1,7 +1,7 @@
 [package]
 name = "rukaibox_flash"
 version = "0.0.2"
-edition = "2021"
+edition = "2024"
 repository = "https://github.com/rukai/rukaibox_firmware"
 
 [dependencies]
@@ -10,4 +10,9 @@ rusb = "0.9.4"
 uf2-decode = "0.2.0"
 rukaibox_firmware = { path = "../rukaibox_firmware", artifact = "bin", target = "thumbv6m-none-eabi" }
 goblin = "0.9.3"
-miette = "7.4.0"
+miette = { version = "7.4.0", features = ["fancy"] }
+rukaibox_config = { path = "../rukaibox_config" }
+kdl = "6.3.3"
+kdl_config_derive = { path = "../kdl_config_derive" }
+kdl_config = { path = "../kdl_config" }
+arrayvec = "0.7.6"

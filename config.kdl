@@ -1,86 +1,106 @@
 // WARNING
 // This configuration file is aspirational and does not do anything yet.
 
-profiles {
-    projectplus {
-        // On startup the controller will start in the first defined profile.
-        // The button combination listed here can be used to jump to this specific profile.
-        activation_combination: mod_x + stick_left + start
+version 0
 
+// TODO: overview documentation
+// include keymapping names, maybe a diagram?
+
+// A maximum of 10 profiles can be defined.
+profiles {
+    - {
         // Which firmware level profile logic to use.
         // Controls things like the exact control stick values used under different circumstances.
         // And any other hardcoded special case logic.
-        logic: projectplus
-
         // Possible values:
-        // * second_priority - when both directions are pressed, the second direction to be pressed is activated.
-        // * neutral - when both directions are pressed, neither are activated
-        socd: second_priority
+        // * project-plus
+        // * rivals2
+        logic project-plus
 
-        left_hand {
-            pinky: shield
-            ring: stick_left
-            middle: stick_down
-            index: stick_right
-
-            middle_2: stick_up
-
-            thumb_left: mod_x
-            thumb_right: mod_y
+        // The button combination listed here can be used to jump to this specific profile.
+        // A maximum of 10 buttons can be used.
+        //
+        // On startup the controller will start in the first defined profile.
+        // Copy/paste a profile to the first position to make it the default.
+        activation-combination {
+            - start
+            - left-hand-thumb-left
+            - left-hand-pinky
         }
 
-        right_hand {
-            index: b
-            middle: x
-            ring: z
-            pinky: stick_up
+        // Possible values:
+        // * second-input-priority - when both directions are pressed, the second direction to be pressed is activated.
+        // * neutral - when both directions are pressed, neither are activated
+        socd second-input-priority
 
-            index_2: r_digital
-            middle_2: y
-            ring_2: r_analog
-            pinky_2: dpad_up
+        left-hand {
+            pinky l-analog
+            ring stick-left
+            middle stick-down
+            index stick-right
 
-            thumb_left: cstick_left
-            thumb_right: cstick_right
-            thumb_up: cstick_up
-            thumb_down: cstick_down
-            thumb_middle: a
+            middle-2 stick-up
+
+            thumb-left mod-x
+            thumb-right mod-y
+        }
+
+        right-hand {
+            index b
+            middle x
+            ring z
+            pinky stick-up
+
+            index-2 r-digital
+            middle-2 y
+            ring-2 r-analog
+            pinky-2 dpad-up
+
+            thumb-left cstick-left
+            thumb-right cstick-right
+            thumb-up cstick-up
+            thumb-down cstick-down
+            thumb-middle a
         }
     }
 
-    rivals2 {
-        activation_combination: mod_x + stick_right + start
-        logic: rivals2
-        socd: second_priority
+    - {
+        logic rivals2
+        activation-combination {
+            - start
+            - left-hand-thumb-left
+            - left-hand-middle
+        }
+        socd second-input-priority
 
-        left_hand {
-            pinky: shield
-            ring: stick_left
-            middle: stick_down
-            index: stick_right
+        left-hand {
+            pinky l-analog
+            ring stick-left
+            middle stick-down
+            index stick-right
 
-            middle_2: stick_up
+            middle-2 stick-up
 
-            thumb_left: mod_x
-            thumb_right: mod_y
+            thumb-left mod-x
+            thumb-right mod-y
         }
 
-        right_hand {
-            index: b
-            middle: x
-            ring: z
-            pinky: stick_up
+        right-hand {
+            index b
+            middle x
+            ring z
+            pinky stick-up
 
-            index_2: r_digital
-            middle_2: y
-            ring_2: r_analog
-            pinky_2: dpad_up
+            index-2 r-digital
+            middle-2 y
+            ring-2 r-analog
+            pinky-2 dpad-up
 
-            thumb_left: cstick_left
-            thumb_right: cstick_right
-            thumb_up: cstick_up
-            thumb_down: cstick_down
-            thumb_middle: a
+            thumb-left cstick-left
+            thumb-right cstick-right
+            thumb-up cstick-up
+            thumb-down cstick-down
+            thumb-middle a
         }
     }
 }

@@ -23,15 +23,13 @@ fn generate(input: DeriveInput) -> Result<TokenStream2, syn::Error> {
                     .map(|x| stringcase::kebab_case(&x.to_string()));
                 Ok(quote! {
                     impl KdlConfig for #ident {
-                        fn parse_as_node(input: NamedSource<String>, node: &KdlNode, diag: &mut Vec<ParseDiagnostic>) -> Parsed<#ident> {
+                        fn parse_as_node(input: NamedSource<String>, node: &KdlNode, diag: &mut Vec<kdl_config::error::ParseDiagnostic>) -> Parsed<#ident> {
                             if let [
                                 #(Some(#rust_field_names),)*
-                            ] = get_children(
+                            ] = kdl_config::parse_helpers::get_children(
                                 input.clone(),
                                 node,
-                                [
-                                #(#kdl_field_names,)*
-                                ],
+                                [ #(#kdl_field_names,)* ],
                                 diag,
                             ) {
                                 return Parsed {
@@ -75,36 +73,22 @@ fn generate(input: DeriveInput) -> Result<TokenStream2, syn::Error> {
                 .collect();
             Ok(quote! {
                 impl KdlConfig for #ident {
-                    fn parse_as_node(input: NamedSource<String>, node: &KdlNode, diagnostics: &mut Vec<ParseDiagnostic>) -> Parsed<#ident> {
+                    fn parse_as_node(input: NamedSource<String>, node: &KdlNode, diagnostics: &mut Vec<kdl_config::error::ParseDiagnostic>) -> Parsed<#ident> {
                         use kdl::KdlValue;
+                        use kdl_config::parse_helpers::get_single_argument_value;
                         let kdl_names = [#(#kdl_names,)*];
-                        let entry_len = node.entries().len();
-                        if node.entries().len() != 1 {
-                            let extra_entries: Vec<String> = node
-                                .entries()
-                                .iter()
-                                .skip(1)
-                                // TODO: handle named values
-                                .map(|x| x.value().to_string())
-                                .collect();
-                            diagnostics.push(ParseDiagnostic {
-                                input: input.clone(),
-                                span: node.span(),
-                                message: Some(format!(
-                                    "Node should only contain 1 entry but contained {entry_len:?}"
-                                )),
-                                label: None,
-                                help: Some(format!(
-                                    "Consider removing the extra entries {extra_entries:?}",
-                                )),
-                                severity: miette::Severity::Error,
-                            });
-                        }
-                        let value = match node.entries().first().unwrap().value() {
-                            KdlValue::String(string) => match string.as_str() {
-                                #(#kdl_names => #ident::#variant_idents,)*
+                        match get_single_argument_value(input.clone(), node, diagnostics) {
+                            Some(KdlValue::String(string)) => match string.as_str() {
+                                #(
+                                    #kdl_names => Parsed {
+                                        value: #ident::#variant_idents,
+                                        full_span: node.span(),
+                                        name_span: node.span(),
+                                        valid: false,
+                                    },
+                                )*
                                 name => {
-                                    diagnostics.push(ParseDiagnostic {
+                                    diagnostics.push(kdl_config::error::ParseDiagnostic {
                                         input: input.clone(),
                                         span: node.span(),
                                         message: Some(format!(
@@ -114,7 +98,7 @@ fn generate(input: DeriveInput) -> Result<TokenStream2, syn::Error> {
                                         help: Some(format!("Consider replacing it with one of {kdl_names:?}")),
                                         severity: miette::Severity::Error,
                                     });
-                                    return Parsed {
+                                    Parsed {
                                         value: Default::default(),
                                         full_span: node.span(),
                                         name_span: node.span(),
@@ -122,41 +106,41 @@ fn generate(input: DeriveInput) -> Result<TokenStream2, syn::Error> {
                                     }
                                 }
                             },
-                            name => {
-                                diagnostics.push(ParseDiagnostic {
+                            Some(name) => {
+                                diagnostics.push(kdl_config::error::ParseDiagnostic {
                                     input: input.clone(),
                                     span: node.span(),
                                     message: Some(format!(
                                         "Expected type string but was {}", "TODO"
                                     )),
                                     label: None,
-                                    help: Some(format!("")),
+                                    help: None,
                                     severity: miette::Severity::Error,
                                 });
-                                return Parsed {
+                                Parsed {
                                     value: Default::default(),
                                     full_span: node.span(),
                                     name_span: node.span(),
                                     valid: false,
                                 }
                             }
-                        };
-                        Parsed {
-                            value,
-                            full_span: node.span(),
-                            name_span: node.span(),
-                            valid: true,
+                            None => Parsed {
+                                value: Default::default(),
+                                full_span: node.span(),
+                                name_span: node.span(),
+                                valid: false,
+                            }
                         }
                     }
 
-                    fn parse_as_entry(input: NamedSource<String>, node: &KdlEntry, diagnostics: &mut Vec<ParseDiagnostic>) -> Parsed<#ident> {
+                    fn parse_as_entry(input: NamedSource<String>, node: &KdlEntry, diagnostics: &mut Vec<kdl_config::error::ParseDiagnostic>) -> Parsed<#ident> {
                         use kdl::KdlValue;
                         let kdl_names = [#(#kdl_names,)*];
                         let value = match node.value() {
                             KdlValue::String(string) => match string.as_str() {
                                 #(#kdl_names => #ident::#variant_idents,)*
                                 name => {
-                                    diagnostics.push(ParseDiagnostic {
+                                    diagnostics.push(kdl_config::error::ParseDiagnostic {
                                         input: input.clone(),
                                         span: node.span(),
                                         message: Some(format!(
@@ -175,14 +159,14 @@ fn generate(input: DeriveInput) -> Result<TokenStream2, syn::Error> {
                                 }
                             },
                             name => {
-                                diagnostics.push(ParseDiagnostic {
+                                diagnostics.push(kdl_config::error::ParseDiagnostic {
                                     input: input.clone(),
                                     span: node.span(),
                                     message: Some(format!(
                                         "Expected type string but was {}", "TODO"
                                     )),
                                     label: None,
-                                    help: Some(format!("")),
+                                    help: None,
                                     severity: miette::Severity::Error,
                                 });
                                 return Parsed {

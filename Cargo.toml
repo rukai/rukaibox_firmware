@@ -1,5 +1,5 @@
 [workspace]
-members = [
+members = [ "kdl_config",
     "kdl_config_derive",
     "rukaibox_flash"
 ]

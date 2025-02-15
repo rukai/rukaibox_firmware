@@ -1,17 +1,14 @@
 // WARNING
 // This configuration file is aspirational and does not do anything yet.
 
+version 0
+
+// TODO: overview documentation
+// include keymapping names, maybe a diagram?
+
 // A maximum of 10 profiles can be defined.
 profiles {
-    profile {
-        // There must be exactly one profile with default set to true.
-        // On startup the controller will start in the profile with default set to true.
-        //default #true
-
-        // The button combination listed here can be used to jump to this specific profile.
-        // A maximum of 10 buttons can be used.
-        activation-combination start left-hand-thumb-left left-hand-pinky
-
+    - {
         // Which firmware level profile logic to use.
         // Controls things like the exact control stick values used under different circumstances.
         // And any other hardcoded special case logic.
@@ -19,6 +16,17 @@ profiles {
         // * project-plus
         // * rivals2
         logic project-plus
+
+        // The button combination listed here can be used to jump to this specific profile.
+        // A maximum of 10 buttons can be used.
+        //
+        // On startup the controller will start in the first defined profile.
+        // Copy/paste a profile to the first position to make it the default.
+        activation-combination {
+            - start
+            - left-hand-thumb-left
+            - left-hand-pinky
+        }
 
         // Possible values:
         // * second-input-priority - when both directions are pressed, the second direction to be pressed is activated.
@@ -56,10 +64,13 @@ profiles {
         }
     }
 
-    profile {
-        //default #false
-        activation-combination start left-hand-thumb-left left-hand-middle
+    - {
         logic rivals2
+        activation-combination {
+            - start
+            - left-hand-thumb-left
+            - left-hand-middle
+        }
         socd second-input-priority
 
         left-hand {

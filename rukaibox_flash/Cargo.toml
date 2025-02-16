@@ -16,3 +16,4 @@ kdl = "6.3.3"
 kdl_config_derive = { path = "../kdl_config_derive" }
 kdl_config = { path = "../kdl_config" }
 arrayvec = "0.7.6"
+rkyv = "0.8.10"

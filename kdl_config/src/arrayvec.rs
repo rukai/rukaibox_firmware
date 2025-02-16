@@ -1,4 +1,4 @@
-use crate::{KdlConfig, Parsed, error::ParseDiagnostic};
+use crate::{KdlConfig, KdlConfigFinalize, Parsed, error::ParseDiagnostic};
 use arrayvec::ArrayVec;
 use kdl::KdlNode;
 use miette::NamedSource;
@@ -42,5 +42,18 @@ impl<T: KdlConfig + Default, const CAP: usize> KdlConfig for ArrayVec<Parsed<T>,
             name_span: node.span(),
             valid: true,
         }
+    }
+}
+
+impl<T: KdlConfigFinalize + Default, const CAP: usize> KdlConfigFinalize
+    for ArrayVec<Parsed<T>, CAP>
+{
+    type FinalizeType = ArrayVec<T::FinalizeType, CAP>;
+    fn finalize(&self) -> Self::FinalizeType {
+        let mut array = ArrayVec::new();
+        for value in self {
+            array.push(value.value.finalize());
+        }
+        array
     }
 }

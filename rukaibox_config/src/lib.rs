@@ -6,13 +6,13 @@ use rkyv::{Archive, Deserialize, Serialize};
 #[derive(Archive, Deserialize, Serialize, Debug, PartialEq, Default)]
 #[rkyv(derive(Debug))]
 pub struct Config {
+    pub version: u32,
     pub profiles: ArrayVec<Profile, 10>,
 }
 
 #[derive(Archive, Deserialize, Serialize, Debug, PartialEq, Default)]
 #[rkyv(derive(Debug))]
 pub struct Profile {
-    pub default: bool,
     pub activation_combination: ArrayVec<PhysicalButton, 10>,
     pub logic: BaseLogic,
     pub socd: SocdType,
@@ -79,13 +79,32 @@ pub enum PhysicalButton {
     LeftHandRing,
     LeftHandMiddle,
     LeftHandIndex,
-    // TODO
+
+    LeftHandMiddle2,
+
+    LeftHandThumbLeft,
+    LeftHandThumbRight,
+
+    RightHandIndex,
+    RightHandMiddle,
+    RightHandRing,
+    RightHandPink,
+
+    RightHandIndex2,
+    RightHandMiddle2,
+    RightHandRing2,
+    RightHandPink2,
+
+    RightHandThumbLeft,
+    RightHandThumbRight,
+    RightHandThumbUp,
+    RightHandThumbDown,
+    RightHandThumbMiddle,
 }
 
 #[derive(Archive, Deserialize, Serialize, Debug, PartialEq, Default)]
 #[rkyv(derive(Debug))]
 pub enum LogicalButton {
-    //LTrigger(u8),
     #[default]
     LAnalog,
     RAnalog,

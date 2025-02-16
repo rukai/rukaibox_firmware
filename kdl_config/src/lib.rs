@@ -1,5 +1,5 @@
 use error::{ParseDiagnostic, ParseError};
-use kdl::{KdlDocument, KdlEntry, KdlNode};
+use kdl::{KdlDocument, KdlNode};
 use miette::{NamedSource, SourceOffset, SourceSpan};
 
 pub mod arrayvec;
@@ -32,21 +32,15 @@ pub trait KdlConfig {
     ) -> Parsed<Self>
     where
         Self: Sized;
+}
 
-    fn parse_as_entry(
-        _source: NamedSource<String>,
-        entry: &KdlEntry,
-        _diagnostics: &mut Vec<ParseDiagnostic>,
-    ) -> Parsed<Self>
-    where
-        Self: Sized,
-    {
-        let type_name = std::any::type_name::<Self>();
-        let entry = entry.to_string();
-        unimplemented!(
-            "Tried to parse entry {entry:?} as {type_name}. However {type_name} does not have an implementation for parse_as_entry."
-        )
-    }
+/// Convert the KdlConfig structure into a finalized struct.
+/// The #[Derive(KdlConfigFinalize)] assumes that the finalize type has the exact same structure with the `Parsed` wrappers removed.
+/// If your final structure differs from this you can manually implement KdlConfigFinalize for your type.
+/// Or just completely ignore `KdlConfigFinalize`, it is ultimately an optional convenience on top of KdlConfig.
+pub trait KdlConfigFinalize {
+    type FinalizeType;
+    fn finalize(&self) -> Self::FinalizeType;
 }
 
 pub struct Parsed<T> {

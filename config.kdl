@@ -6,7 +6,7 @@ version 0
 // TODO: overview documentation
 // include keymapping names, maybe a diagram?
 
-// A maximum of 10 profiles can be defined.
+// A maximum of 50 profiles can be defined.
 profiles {
     - {
         // Which firmware level profile logic to use.

@@ -1,5 +1,14 @@
 #![no_std]
 
+// Memory layout
+pub const RP2040_FLASH_OFFSET: usize = 0x10000000;
+pub const RP2040_FLASH_SIZE: usize = 1024 * 1024 * 16; // 16 MiB
+
+pub const FIRMWARE_OFFSET: usize = 0;
+pub const FIRMWARE_SIZE: usize = 1024 * 1024 * 15; // 15 MiB
+pub const CONFIG_OFFSET: usize = 1024 * 1024 * 15;
+pub const CONFIG_SIZE: usize = 256; // 10 KiB
+
 use arrayvec::ArrayVec;
 use rkyv::{Archive, Deserialize, Serialize};
 
@@ -7,7 +16,7 @@ use rkyv::{Archive, Deserialize, Serialize};
 #[rkyv(derive(Debug))]
 pub struct Config {
     pub version: u32,
-    pub profiles: ArrayVec<Profile, 10>,
+    pub profiles: ArrayVec<Profile, 2>,
 }
 
 #[derive(Archive, Deserialize, Serialize, Debug, PartialEq, Default)]

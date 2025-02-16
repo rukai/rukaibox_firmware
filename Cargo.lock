@@ -886,8 +886,10 @@ dependencies = [
  "joybus-pio",
  "panic-halt",
  "pio",
+ "rkyv",
  "rp-pico",
  "rp2040-hal",
+ "rukaibox_config",
 ]
 
 [[package]]

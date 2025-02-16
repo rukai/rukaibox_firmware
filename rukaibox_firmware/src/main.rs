@@ -1,10 +1,12 @@
 #![no_std]
 #![no_main]
 
+mod config;
 mod input;
 mod project_plus;
 mod socd;
 
+use config::Config;
 use cortex_m::delay::Delay;
 use input::ButtonInput;
 use joybus_pio::{GamecubeController, JoybusPio};
@@ -75,7 +77,7 @@ fn main() -> ! {
         delay.delay_ms(100);
     }
 
-    let input = ButtonInput {
+    let mut input = ButtonInput {
         left_hand_index: pins.gpio2.into_pull_up_input().into_dyn_pin(),
         left_hand_middle: pins.gpio3.into_pull_up_input().into_dyn_pin(),
         left_hand_ring: pins.gpio4.into_pull_up_input().into_dyn_pin(),
@@ -104,6 +106,40 @@ fn main() -> ! {
 
         start,
     };
+
+    let config = Config::load();
+    let Ok(config) = config.parse() else {
+        // Failed to parse config, set 5s blinky for diagnostics
+        loop {
+            led_pin.set_high().unwrap();
+            delay.delay_ms(5000);
+            if input.start.is_low().unwrap_or(true) {
+                reset_to_usb_boot(0, 0);
+            }
+
+            led_pin.set_low().unwrap();
+            delay.delay_ms(5000);
+            if input.start.is_low().unwrap_or(true) {
+                reset_to_usb_boot(0, 0);
+            }
+        }
+    };
+
+    if config.version != 0 {
+        loop {
+            led_pin.set_high().unwrap();
+            delay.delay_ms(2000);
+            if input.start.is_low().unwrap_or(true) {
+                reset_to_usb_boot(0, 0);
+            }
+
+            led_pin.set_low().unwrap();
+            delay.delay_ms(2000);
+            if input.start.is_low().unwrap_or(true) {
+                reset_to_usb_boot(0, 0);
+            }
+        }
+    }
 
     let mapping = ProjectPlusMapping::new(input);
 

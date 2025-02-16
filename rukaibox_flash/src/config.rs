@@ -1,11 +1,19 @@
-use std::path::PathBuf;
-
 use arrayvec::ArrayVec;
 use kdl::{KdlDocument, KdlNode};
 use kdl_config::{KdlConfig, KdlConfigFinalize, Parsed, error::ParseError};
 use kdl_config_derive::{KdlConfig, KdlConfigFinalize};
-use miette::{IntoDiagnostic, NamedSource};
+use miette::{IntoDiagnostic, NamedSource, miette};
+use rkyv::rancor::Error;
 use rukaibox_config::Config;
+use std::path::PathBuf;
+
+pub fn encode_config(config: &Config) -> miette::Result<Vec<u8>> {
+    let bytes = rkyv::to_bytes::<Error>(config).map_err(|e| miette!(e))?;
+    let mut result = vec![];
+    result.extend((bytes.len() as u32).to_be_bytes());
+    result.extend(bytes.iter());
+    Ok(result)
+}
 
 pub fn load() -> miette::Result<Config> {
     let input = load_source(None)?;
@@ -48,7 +56,7 @@ fn load_source(path: Option<PathBuf>) -> miette::Result<NamedSource<String>> {
 #[kdl_config_finalize_into = "rukaibox_config::Config"]
 pub struct ConfigKdl {
     pub version: Parsed<u32>,
-    pub profiles: Parsed<ArrayVec<Parsed<ProfileKdl>, 10>>,
+    pub profiles: Parsed<ArrayVec<Parsed<ProfileKdl>, 2>>,
 }
 
 // TODO: add derive side validation that Parsed is used everywhere.

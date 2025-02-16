@@ -1,53 +1,53 @@
 use crate::{
-    input::ButtonInput,
+    input::ButtonInputResults,
     socd::{SocdState, SocdType},
 };
-use embedded_hal::digital::InputPin;
 use joybus_pio::GamecubeInput;
+use rukaibox_config::{ArchivedProfile, ArchivedSocdType};
 
 pub struct ProjectPlusMapping {
-    pub input: ButtonInput,
     pub socd_state: SocdState,
     pub socd_type: SocdType,
 }
 
 impl ProjectPlusMapping {
-    pub fn new(input: ButtonInput) -> Self {
+    pub fn new(profile: &ArchivedProfile) -> Self {
+        let socd_type = match profile.socd {
+            ArchivedSocdType::SecondInputPriority => SocdType::SecondInputPriority,
+            ArchivedSocdType::Neutral => SocdType::Neutral,
+        };
+
         ProjectPlusMapping {
-            input,
             socd_state: Default::default(),
-            socd_type: SocdType::SecondInputPriority,
+            socd_type,
         }
     }
 
-    pub fn poll(&mut self) -> GamecubeInput {
-        // Query pins for input
+    pub fn map_to_gamecube(&mut self, input: &ButtonInputResults) -> GamecubeInput {
+        let start = input.start;
 
-        let start = self.input.start.is_low().unwrap();
+        let mod_x = input.left_hand_thumb_left;
+        let mod_y = input.left_hand_thumb_right;
 
-        let mod_x = self.input.left_hand_thumb_left.is_low().unwrap();
-        let mod_y = self.input.left_hand_thumb_right.is_low().unwrap();
+        let a = input.right_hand_thumb_middle;
+        let b = input.right_hand_index;
+        let x = input.right_hand_middle;
+        let y = input.right_hand_middle_2;
+        let z = input.right_hand_ring;
+        let dpad_up_shortcut = input.right_hand_pinky_2;
+        let r_analog = input.right_hand_ring_2;
+        let l_digital = input.left_hand_pinky;
+        let r_digital = input.right_hand_index_2;
 
-        let a = self.input.right_hand_thumb_middle.is_low().unwrap();
-        let b = self.input.right_hand_index.is_low().unwrap();
-        let x = self.input.right_hand_middle.is_low().unwrap();
-        let y = self.input.right_hand_middle_2.is_low().unwrap();
-        let z = self.input.right_hand_ring.is_low().unwrap();
-        let dpad_up_shortcut = self.input.right_hand_pinky_2.is_low().unwrap();
-        let r_analog = self.input.right_hand_ring_2.is_low().unwrap();
-        let l_digital = self.input.left_hand_pinky.is_low().unwrap();
-        let r_digital = self.input.right_hand_index_2.is_low().unwrap();
+        let stick_left = input.left_hand_ring;
+        let stick_right = input.left_hand_index;
+        let stick_up = input.right_hand_pinky || input.left_hand_middle_2;
+        let stick_down = input.left_hand_middle;
 
-        let stick_left = self.input.left_hand_ring.is_low().unwrap();
-        let stick_right = self.input.left_hand_index.is_low().unwrap();
-        let stick_up = self.input.right_hand_pinky.is_low().unwrap()
-            || self.input.left_hand_middle_2.is_low().unwrap();
-        let stick_down = self.input.left_hand_middle.is_low().unwrap();
-
-        let cstick_left = self.input.right_hand_thumb_left.is_low().unwrap();
-        let cstick_right = self.input.right_hand_thumb_right.is_low().unwrap();
-        let cstick_up = self.input.right_hand_thumb_up.is_low().unwrap();
-        let cstick_down = self.input.right_hand_thumb_down.is_low().unwrap();
+        let cstick_left = input.right_hand_thumb_left;
+        let cstick_right = input.right_hand_thumb_right;
+        let cstick_up = input.right_hand_thumb_up;
+        let cstick_down = input.right_hand_thumb_down;
 
         // Resolve SOCD
 

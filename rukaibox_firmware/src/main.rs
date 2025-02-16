@@ -3,7 +3,7 @@
 
 mod config;
 mod input;
-mod project_plus;
+mod profile;
 mod socd;
 
 use config::Config;
@@ -14,7 +14,6 @@ use joybus_pio::{GamecubeController, JoybusPio};
 use bsp::entry;
 use embedded_hal::digital::{InputPin, OutputPin};
 use panic_halt as _;
-use project_plus::ProjectPlusMapping;
 // This board has the same pinout as a pico so the pico bsp is handy.
 use bsp::hal::{
     clocks::{Clock, init_clocks_and_plls},
@@ -22,12 +21,14 @@ use bsp::hal::{
     sio::Sio,
     watchdog::Watchdog,
 };
+use profile::MapProfile;
 use rp_pico as bsp;
 use rp2040_hal::{
     Timer,
     gpio::{FunctionSio, Pin, PullDown, SioOutput, bank0::Gpio25},
     rom_data::reset_to_usb_boot,
 };
+use rukaibox_config::ArchivedConfig;
 
 #[entry]
 fn main() -> ! {
@@ -125,31 +126,23 @@ fn main() -> ! {
         }
     };
 
-    if config.version != 0 {
-        loop {
-            led_pin.set_high().unwrap();
-            delay.delay_ms(2000);
-            if input.start.is_low().unwrap_or(true) {
-                reset_to_usb_boot(0, 0);
-            }
-
-            led_pin.set_low().unwrap();
-            delay.delay_ms(2000);
-            if input.start.is_low().unwrap_or(true) {
-                reset_to_usb_boot(0, 0);
-            }
-        }
-    }
-
-    let mapping = ProjectPlusMapping::new(input);
+    let profile = MapProfile::new(config.profiles.first().unwrap());
 
     let pio = JoybusPio::new(pins.gpio28, pac.PIO0, &mut pac.RESETS, clocks);
     match GamecubeController::try_new(pio, &timer, &mut delay) {
         Ok(gamecube_controller) => {
-            run_gamecube_loop(led_pin, gamecube_controller, &timer, &mut delay, mapping);
+            run_gamecube_loop(
+                led_pin,
+                gamecube_controller,
+                &timer,
+                &mut delay,
+                profile,
+                input,
+                &config,
+            );
         }
         Err(_pio) => {
-            run_pc_loop(led_pin, &mut delay, mapping);
+            run_pc_loop(led_pin, &mut delay, input);
         }
     }
 }
@@ -159,7 +152,9 @@ fn run_gamecube_loop(
     mut gamecube_controller: GamecubeController,
     timer: &Timer,
     delay: &mut Delay,
-    mut mapping: ProjectPlusMapping,
+    mut profile: MapProfile,
+    mut input: ButtonInput,
+    config: &ArchivedConfig,
 ) -> ! {
     let mut counter = 0u32;
     loop {
@@ -171,7 +166,9 @@ fn run_gamecube_loop(
         }
 
         gamecube_controller.wait_for_poll_start(timer, delay);
-        let report = mapping.poll();
+        let input_results = input.get_pin_state();
+        profile.change_profile(&input_results, config);
+        let report = profile.map_to_gamecube(&input_results);
         gamecube_controller.respond_to_poll(timer, delay, report);
     }
 }
@@ -179,7 +176,7 @@ fn run_gamecube_loop(
 fn run_pc_loop(
     mut led_pin: Pin<Gpio25, FunctionSio<SioOutput>, PullDown>,
     delay: &mut Delay,
-    mut mapping: ProjectPlusMapping,
+    mut input: ButtonInput,
 ) -> ! {
     let mut blink = true;
     loop {
@@ -192,7 +189,7 @@ fn run_pc_loop(
         }
 
         // we are probably connected to a PC so allow flashing via start button
-        if mapping.input.start.is_low().unwrap_or(true) {
+        if input.start.is_low().unwrap_or(true) {
             reset_to_usb_boot(0, 0);
         }
 

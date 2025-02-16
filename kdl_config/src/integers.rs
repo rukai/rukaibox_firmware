@@ -1,4 +1,7 @@
-use crate::{KdlConfig, Parsed, error::ParseDiagnostic, parse_helpers::get_single_argument_value};
+use crate::{
+    KdlConfig, KdlConfigFinalize, Parsed, error::ParseDiagnostic,
+    parse_helpers::get_single_argument_value,
+};
 use kdl::KdlNode;
 use miette::NamedSource;
 
@@ -61,5 +64,12 @@ impl KdlConfig for u32 {
                 valid: false,
             },
         }
+    }
+}
+
+impl KdlConfigFinalize for u32 {
+    type FinalizeType = u32;
+    fn finalize(&self) -> Self::FinalizeType {
+        *self
     }
 }

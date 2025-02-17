@@ -34,45 +34,41 @@ profiles {
         buttons {
             start start
 
-            // left hand
-
             l-digital left-pinky
-            //l-analog left-pinky or right-ring
-            stick-left left-ring
-            stick-down left-middle
-            stick-right left-index
+            //TODO: l-digital left-pinky or right-ring
+            r-digital right-index2
+            l-analog none
+            r-analog right-ring2
 
             stick-up right-pinky
             stick-up2 left-middle2
-            //stick-up left-middle-2 or right-pinky
-
-            mod-x left-thumb-left
-            mod-y left-thumb-right
-
-            // right hand
-
-            b right-index
-            x right-middle
-            z right-ring
-
-            r-digital right-index2
-            y right-middle2
-            r-analog right-ring2
-
-            dpad-up right-pinky2
-            // TODO: specify all dpad buttons as combinations here or failing that just rename to dpad and implement all in firmware
-            //dpad-down right-pinky-2 and right-thumb-down
+            //TODO: stick-up left-middle-2 or right-pinky
+            stick-down left-middle
+            stick-left left-ring
+            stick-right left-index
 
             cstick-left right-thumb-left
             cstick-right right-thumb-right
             cstick-up right-thumb-up
             cstick-down right-thumb-down
+
+            mod-x left-thumb-left
+            mod-y left-thumb-right
+
             a right-thumb-middle
-            //a right-thumb-middle or right-ring
+            //TODO: a right-thumb-middle or right-ring
+            b right-index
+            x right-middle
+            y right-middle2
+            z right-ring
+            //TODO: z mod-x and right-ring
 
-            // unused buttons
-
-            l-analog none
+            // The P+ profile already allows dpad controls via `mod-x + mod-y + cstick-up` etc.
+            // The below mappings are additional ways to input dpad and do not replace those combinations.
+            dpad-up right-pinky2
+            dpad-down none
+            dpad-left none
+            dpad-right none
         }
     }
 
@@ -89,45 +85,41 @@ profiles {
         buttons {
             start start
 
-            // left hand
-
             l-digital left-pinky
-            //l-analog left-pinky or right-ring
-            stick-left left-ring
-            stick-down left-middle
-            stick-right left-index
+            //TODO: l-digital left-pinky or right-ring
+            r-digital right-index2
+            l-analog none
+            r-analog right-ring2
 
             stick-up right-pinky
             stick-up2 left-middle2
-            //stick-up left-middle-2 or right-pinky
-
-            mod-x left-thumb-left
-            mod-y left-thumb-right
-
-            // right hand
-
-            b right-index
-            x right-middle
-            z right-ring
-
-            r-digital right-index2
-            y right-middle2
-            r-analog right-ring2
-
-            dpad-up right-pinky2
-            // TODO: specify all dpad buttons as combinations here or failing that just rename to dpad and implement all in firmware
-            //dpad-down right-pinky-2 and right-thumb-down
+            //TODO: stick-up left-middle-2 or right-pinky
+            stick-down left-middle
+            stick-left left-ring
+            stick-right left-index
 
             cstick-left right-thumb-left
             cstick-right right-thumb-right
             cstick-up right-thumb-up
             cstick-down right-thumb-down
+
+            mod-x left-thumb-left
+            mod-y left-thumb-right
+
             a right-thumb-middle
-            //a right-thumb-middle or right-ring
+            //TODO: a right-thumb-middle or right-ring
+            b right-index
+            x right-middle
+            y right-middle2
+            z right-ring
+            //TODO: z mod-x and right-ring
 
-            // unused buttons
-
-            l-analog none
+            // The Rivals2 profile already allows dpad controls via `mod-x + mod-y + cstick-up` etc.
+            // The below mappings are additional ways to input dpad and do not replace those combinations.
+            dpad-up right-pinky2
+            dpad-down none
+            dpad-left none
+            dpad-right none
         }
     }
 }

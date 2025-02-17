@@ -111,10 +111,9 @@ impl ButtonInputResults {
             y: self.get_button_value(map.y),
             z: self.get_button_value(map.z),
             dpad_up: self.get_button_value(map.dpad_up),
-            // TODO
-            dpad_down: false,
-            dpad_left: false,
-            dpad_right: false,
+            dpad_down: self.get_button_value(map.dpad_down),
+            dpad_left: self.get_button_value(map.dpad_left),
+            dpad_right: self.get_button_value(map.dpad_right),
             l_digital: self.get_button_value(map.l_digital),
             r_digital: self.get_button_value(map.r_digital),
             l_analog: self.get_button_value(map.l_analog),
@@ -171,13 +170,9 @@ pub struct ButtonInputLogical {
     pub y: bool,
     pub z: bool,
 
-    // TODO
     pub dpad_up: bool,
-    #[allow(dead_code)]
     pub dpad_down: bool,
-    #[allow(dead_code)]
     pub dpad_left: bool,
-    #[allow(dead_code)]
     pub dpad_right: bool,
 
     pub l_digital: bool,

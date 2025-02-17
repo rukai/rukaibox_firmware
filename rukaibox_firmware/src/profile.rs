@@ -3,7 +3,7 @@ mod project_plus;
 use crate::input::ButtonInputResults;
 use joybus_pio::GamecubeInput;
 use project_plus::ProjectPlusMapping;
-use rukaibox_config::{ArchivedBaseLogic, ArchivedConfig, ArchivedProfile};
+use rukaibox_config::{BaseLogic, Config, Profile};
 
 pub enum MapProfile {
     ProjectPlus(ProjectPlusMapping),
@@ -12,12 +12,10 @@ pub enum MapProfile {
 }
 
 impl MapProfile {
-    pub fn new(config: &ArchivedProfile) -> Self {
+    pub fn new(config: &Profile) -> Self {
         match config.logic {
-            ArchivedBaseLogic::ProjectPlus => {
-                MapProfile::ProjectPlus(ProjectPlusMapping::new(config))
-            }
-            ArchivedBaseLogic::Rivals2 => MapProfile::ProjectPlus(ProjectPlusMapping::new(config)),
+            BaseLogic::ProjectPlus => MapProfile::ProjectPlus(ProjectPlusMapping::new(config)),
+            BaseLogic::Rivals2 => MapProfile::Rivals2(ProjectPlusMapping::new(config)),
         }
     }
 
@@ -28,14 +26,17 @@ impl MapProfile {
         }
     }
 
-    pub fn change_profile(&mut self, input: &ButtonInputResults, config: &ArchivedConfig) {
-        for profile in config.profiles.iter() {
-            if !profile.activation_combination.is_empty() {
-                // TODO: implement actual logic here!!!!!
-                if input.left_hand_pinky && input.start {
-                    *self = MapProfile::Rivals2(ProjectPlusMapping::new(profile))
+    pub fn change_profile(&mut self, input: &ButtonInputResults, config: &Config) {
+        'next_profile: for profile in config.profiles.iter() {
+            for check in profile.activation_combination.iter() {
+                if !input.get_button_value(*check) {
+                    continue 'next_profile;
                 }
             }
+
+            *self = Self::new(profile);
+            // immediately return to avoid triggering any other changes.
+            return;
         }
     }
 }

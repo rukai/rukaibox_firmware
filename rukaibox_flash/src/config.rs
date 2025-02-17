@@ -66,43 +66,78 @@ pub struct ProfileKdl {
     pub activation_combination: Parsed<ArrayVec<Parsed<PhysicalButtonKdl>, 10>>,
     pub logic: Parsed<BaseLogicKdl>,
     pub socd: Parsed<SocdTypeKdl>,
-    pub left_hand: Parsed<LeftHandMapKdl>,
-    pub right_hand: Parsed<RightHandMapKdl>,
+    pub buttons: Parsed<LogicalButtonToPhysicalButtonKdl>,
+    // pub left_hand: Parsed<LeftHandMapKdl>,
+    // pub right_hand: Parsed<RightHandMapKdl>,
 }
 
 #[derive(KdlConfig, KdlConfigFinalize, Default, Debug)]
-#[kdl_config_finalize_into = "rukaibox_config::LeftHandMap"]
-pub struct LeftHandMapKdl {
-    pub pinky: Parsed<LogicalButtonKdl>,
-    pub ring: Parsed<LogicalButtonKdl>,
-    pub middle: Parsed<LogicalButtonKdl>,
-    pub index: Parsed<LogicalButtonKdl>,
+#[kdl_config_finalize_into = "rukaibox_config::LogicalButtonToPhysicalButton"]
+pub struct LogicalButtonToPhysicalButtonKdl {
+    pub mod_x: Parsed<PhysicalButtonKdl>,
+    pub mod_y: Parsed<PhysicalButtonKdl>,
 
-    pub middle_2: Parsed<LogicalButtonKdl>,
+    pub start: Parsed<PhysicalButtonKdl>,
+    pub a: Parsed<PhysicalButtonKdl>,
+    pub b: Parsed<PhysicalButtonKdl>,
+    pub x: Parsed<PhysicalButtonKdl>,
+    pub y: Parsed<PhysicalButtonKdl>,
+    pub z: Parsed<PhysicalButtonKdl>,
 
-    pub thumb_left: Parsed<LogicalButtonKdl>,
-    pub thumb_right: Parsed<LogicalButtonKdl>,
+    // TODO
+    pub dpad_up: Parsed<PhysicalButtonKdl>,
+
+    pub l_digital: Parsed<PhysicalButtonKdl>,
+    pub r_digital: Parsed<PhysicalButtonKdl>,
+    pub l_analog: Parsed<PhysicalButtonKdl>,
+    pub r_analog: Parsed<PhysicalButtonKdl>,
+
+    pub stick_left: Parsed<PhysicalButtonKdl>,
+    pub stick_right: Parsed<PhysicalButtonKdl>,
+    pub stick_up: Parsed<PhysicalButtonKdl>,
+    /// Quick hack to work around lack of OR
+    pub stick_up2: Parsed<PhysicalButtonKdl>,
+    pub stick_down: Parsed<PhysicalButtonKdl>,
+
+    pub cstick_left: Parsed<PhysicalButtonKdl>,
+    pub cstick_right: Parsed<PhysicalButtonKdl>,
+    pub cstick_up: Parsed<PhysicalButtonKdl>,
+    pub cstick_down: Parsed<PhysicalButtonKdl>,
 }
 
-#[derive(KdlConfig, KdlConfigFinalize, Default, Debug)]
-#[kdl_config_finalize_into = "rukaibox_config::RightHandMap"]
-pub struct RightHandMapKdl {
-    pub index: Parsed<LogicalButtonKdl>,
-    pub middle: Parsed<LogicalButtonKdl>,
-    pub ring: Parsed<LogicalButtonKdl>,
-    pub pinky: Parsed<LogicalButtonKdl>,
+// #[derive(KdlConfig, KdlConfigFinalize, Default, Debug)]
+// #[kdl_config_finalize_into = "rukaibox_config::LeftHandMap"]
+// pub struct LeftHandMapKdl {
+//     pub pinky: Parsed<LogicalButtonKdl>,
+//     pub ring: Parsed<LogicalButtonKdl>,
+//     pub middle: Parsed<LogicalButtonKdl>,
+//     pub index: Parsed<LogicalButtonKdl>,
 
-    pub index_2: Parsed<LogicalButtonKdl>,
-    pub middle_2: Parsed<LogicalButtonKdl>,
-    pub ring_2: Parsed<LogicalButtonKdl>,
-    pub pinky_2: Parsed<LogicalButtonKdl>,
+//     pub middle_2: Parsed<LogicalButtonKdl>,
 
-    pub thumb_left: Parsed<LogicalButtonKdl>,
-    pub thumb_right: Parsed<LogicalButtonKdl>,
-    pub thumb_up: Parsed<LogicalButtonKdl>,
-    pub thumb_down: Parsed<LogicalButtonKdl>,
-    pub thumb_middle: Parsed<LogicalButtonKdl>,
-}
+//     pub thumb_left: Parsed<LogicalButtonKdl>,
+//     pub thumb_right: Parsed<LogicalButtonKdl>,
+// }
+
+// #[derive(KdlConfig, KdlConfigFinalize, Default, Debug)]
+// #[kdl_config_finalize_into = "rukaibox_config::RightHandMap"]
+// pub struct RightHandMapKdl {
+//     pub index: Parsed<LogicalButtonKdl>,
+//     pub middle: Parsed<LogicalButtonKdl>,
+//     pub ring: Parsed<LogicalButtonKdl>,
+//     pub pinky: Parsed<LogicalButtonKdl>,
+
+//     pub index_2: Parsed<LogicalButtonKdl>,
+//     pub middle_2: Parsed<LogicalButtonKdl>,
+//     pub ring_2: Parsed<LogicalButtonKdl>,
+//     pub pinky_2: Parsed<LogicalButtonKdl>,
+
+//     pub thumb_left: Parsed<LogicalButtonKdl>,
+//     pub thumb_right: Parsed<LogicalButtonKdl>,
+//     pub thumb_up: Parsed<LogicalButtonKdl>,
+//     pub thumb_down: Parsed<LogicalButtonKdl>,
+//     pub thumb_middle: Parsed<LogicalButtonKdl>,
+// }
 
 #[derive(KdlConfig, KdlConfigFinalize, Default, Debug)]
 #[kdl_config_finalize_into = "rukaibox_config::SocdType"]
@@ -125,31 +160,34 @@ pub enum BaseLogicKdl {
 pub enum PhysicalButtonKdl {
     #[default]
     Start,
-    LeftHandPinky,
-    LeftHandRing,
-    LeftHandMiddle,
-    LeftHandIndex,
+    LeftPinky,
+    LeftRing,
+    LeftMiddle,
+    LeftIndex,
 
-    LeftHandMiddle2,
+    LeftMiddle2,
 
-    LeftHandThumbLeft,
-    LeftHandThumbRight,
+    LeftThumbLeft,
+    LeftThumbRight,
 
-    RightHandIndex,
-    RightHandMiddle,
-    RightHandRing,
-    RightHandPink,
+    RightIndex,
+    RightMiddle,
+    RightRing,
+    RightPinky,
 
-    RightHandIndex2,
-    RightHandMiddle2,
-    RightHandRing2,
-    RightHandPink2,
+    RightIndex2,
+    RightMiddle2,
+    RightRing2,
+    RightPinky2,
 
-    RightHandThumbLeft,
-    RightHandThumbRight,
-    RightHandThumbUp,
-    RightHandThumbDown,
-    RightHandThumbMiddle,
+    RightThumbLeft,
+    RightThumbRight,
+    RightThumbUp,
+    RightThumbDown,
+    RightThumbMiddle,
+
+    // This will never be pressed
+    None,
 }
 
 #[derive(KdlConfig, KdlConfigFinalize, Default, Debug)]

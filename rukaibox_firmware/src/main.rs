@@ -6,7 +6,6 @@ mod input;
 mod profile;
 mod socd;
 
-use config::Config;
 use cortex_m::delay::Delay;
 use input::ButtonInput;
 use joybus_pio::{GamecubeController, JoybusPio};
@@ -28,7 +27,7 @@ use rp2040_hal::{
     gpio::{FunctionSio, Pin, PullDown, SioOutput, bank0::Gpio25},
     rom_data::reset_to_usb_boot,
 };
-use rukaibox_config::ArchivedConfig;
+use rukaibox_config::Config;
 
 #[entry]
 fn main() -> ! {
@@ -79,37 +78,36 @@ fn main() -> ! {
     }
 
     let mut input = ButtonInput {
-        left_hand_index: pins.gpio2.into_pull_up_input().into_dyn_pin(),
-        left_hand_middle: pins.gpio3.into_pull_up_input().into_dyn_pin(),
-        left_hand_ring: pins.gpio4.into_pull_up_input().into_dyn_pin(),
-        left_hand_pinky: pins.gpio5.into_pull_up_input().into_dyn_pin(),
+        left_index: pins.gpio2.into_pull_up_input().into_dyn_pin(),
+        left_middle: pins.gpio3.into_pull_up_input().into_dyn_pin(),
+        left_ring: pins.gpio4.into_pull_up_input().into_dyn_pin(),
+        left_pinky: pins.gpio5.into_pull_up_input().into_dyn_pin(),
 
-        left_hand_middle_2: pins.gpio17.into_pull_up_input().into_dyn_pin(),
+        left_middle_2: pins.gpio1.into_pull_up_input().into_dyn_pin(),
 
-        left_hand_thumb_left: pins.gpio6.into_pull_up_input().into_dyn_pin(),
-        left_hand_thumb_right: pins.gpio7.into_pull_up_input().into_dyn_pin(),
+        left_thumb_left: pins.gpio6.into_pull_up_input().into_dyn_pin(),
+        left_thumb_right: pins.gpio7.into_pull_up_input().into_dyn_pin(),
 
-        right_hand_index: pins.gpio26.into_pull_up_input().into_dyn_pin(),
-        right_hand_middle: pins.gpio21.into_pull_up_input().into_dyn_pin(),
-        right_hand_ring: pins.gpio19.into_pull_up_input().into_dyn_pin(),
-        right_hand_pinky: pins.gpio1.into_pull_up_input().into_dyn_pin(),
+        right_index: pins.gpio26.into_pull_up_input().into_dyn_pin(),
+        right_middle: pins.gpio21.into_pull_up_input().into_dyn_pin(),
+        right_ring: pins.gpio19.into_pull_up_input().into_dyn_pin(),
+        right_pinky: pins.gpio17.into_pull_up_input().into_dyn_pin(),
 
-        right_hand_index_2: pins.gpio27.into_pull_up_input().into_dyn_pin(),
-        right_hand_middle_2: pins.gpio22.into_pull_up_input().into_dyn_pin(),
-        right_hand_ring_2: pins.gpio20.into_pull_up_input().into_dyn_pin(),
-        right_hand_pinky_2: pins.gpio18.into_pull_up_input().into_dyn_pin(),
+        right_index_2: pins.gpio27.into_pull_up_input().into_dyn_pin(),
+        right_middle_2: pins.gpio22.into_pull_up_input().into_dyn_pin(),
+        right_ring_2: pins.gpio20.into_pull_up_input().into_dyn_pin(),
+        right_pinky_2: pins.gpio18.into_pull_up_input().into_dyn_pin(),
 
-        right_hand_thumb_left: pins.gpio13.into_pull_up_input().into_dyn_pin(),
-        right_hand_thumb_right: pins.gpio16.into_pull_up_input().into_dyn_pin(),
-        right_hand_thumb_up: pins.gpio12.into_pull_up_input().into_dyn_pin(),
-        right_hand_thumb_down: pins.gpio15.into_pull_up_input().into_dyn_pin(),
-        right_hand_thumb_middle: pins.gpio14.into_pull_up_input().into_dyn_pin(),
+        right_thumb_left: pins.gpio13.into_pull_up_input().into_dyn_pin(),
+        right_thumb_right: pins.gpio16.into_pull_up_input().into_dyn_pin(),
+        right_thumb_up: pins.gpio12.into_pull_up_input().into_dyn_pin(),
+        right_thumb_down: pins.gpio15.into_pull_up_input().into_dyn_pin(),
+        right_thumb_middle: pins.gpio14.into_pull_up_input().into_dyn_pin(),
 
         start,
     };
 
-    let config = Config::load();
-    let Ok(config) = config.parse() else {
+    let Ok(config) = config::load() else {
         // Failed to parse config, set 5s blinky for diagnostics
         loop {
             led_pin.set_high().unwrap();
@@ -154,7 +152,7 @@ fn run_gamecube_loop(
     delay: &mut Delay,
     mut profile: MapProfile,
     mut input: ButtonInput,
-    config: &ArchivedConfig,
+    config: &Config,
 ) -> ! {
     let mut counter = 0u32;
     loop {

@@ -1,22 +1,13 @@
 use rkyv::{rancor::Failure, util::Align};
-use rukaibox_config::{ArchivedConfig, CONFIG_OFFSET, CONFIG_SIZE, RP2040_FLASH_OFFSET};
+use rukaibox_config::{ArchivedConfig, CONFIG_OFFSET, CONFIG_SIZE, Config, RP2040_FLASH_OFFSET};
 
 // TODO: store in heap instead, apparently only 2kb of stack o.0
-pub struct Config {
-    pub bytes: Align<[u8; CONFIG_SIZE]>,
-}
 
-impl Config {
-    pub fn load() -> Config {
-        let bytes = load_config_bytes_from_flash();
-        Config { bytes }
-    }
-
-    pub fn parse(&self) -> Result<&ArchivedConfig, Failure> {
-        let size = u32::from_be_bytes([self.bytes[0], self.bytes[1], self.bytes[2], self.bytes[3]])
-            as usize;
-        rkyv::api::low::access::<ArchivedConfig, Failure>(&(&*self.bytes)[4..4 + size])
-    }
+pub fn load() -> Result<Config, Failure> {
+    let bytes = load_config_bytes_from_flash();
+    let size = u32::from_be_bytes([bytes[0], bytes[1], bytes[2], bytes[3]]) as usize;
+    let archive = rkyv::api::low::access::<ArchivedConfig, Failure>(&(&*bytes)[4..4 + size])?;
+    rkyv::api::low::deserialize::<_, Failure>(archive)
 }
 
 fn load_config_bytes_from_flash() -> Align<[u8; CONFIG_SIZE]> {

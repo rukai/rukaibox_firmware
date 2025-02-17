@@ -1,13 +1,11 @@
-// WARNING
-// This configuration file is aspirational and does not do anything yet.
-
 version 0
 
 // TODO: overview documentation
-// include keymapping names, maybe a diagram?
+// include keymapping names and link to a diagram
 
 // A maximum of 50 profiles can be defined.
 profiles {
+    // Standard Project+ profile
     - {
         // Which firmware level profile logic to use.
         // Controls things like the exact control stick values used under different circumstances.
@@ -21,11 +19,11 @@ profiles {
         // A maximum of 10 buttons can be used.
         //
         // On startup the controller will start in the first defined profile.
-        // Copy/paste a profile to the first position to make it the default.
+        // Cut/paste a profile to the first position to make it the default.
         activation-combination {
             - start
-            - left-hand-thumb-left
-            - left-hand-pinky
+            - left-thumb-left
+            - left-pinky
         }
 
         // Possible values:
@@ -33,74 +31,143 @@ profiles {
         // * neutral - when both directions are pressed, neither are activated
         socd second-input-priority
 
-        left-hand {
-            pinky l-analog
-            ring stick-left
-            middle stick-down
-            index stick-right
+        buttons {
+            start start
 
-            middle-2 stick-up
+            // left hand
 
-            thumb-left mod-x
-            thumb-right mod-y
-        }
+            l-digital left-pinky
+            //l-analog left-pinky or right-ring
+            stick-left left-ring
+            stick-down left-middle
+            stick-right left-index
 
-        right-hand {
-            index b
-            middle x
-            ring z
-            pinky stick-up
+            stick-up right-pinky
+            stick-up2 left-middle2
+            //stick-up left-middle-2 or right-pinky
 
-            index-2 r-digital
-            middle-2 y
-            ring-2 r-analog
-            pinky-2 dpad-up
+            mod-x left-thumb-left
+            mod-y left-thumb-right
 
-            thumb-left cstick-left
-            thumb-right cstick-right
-            thumb-up cstick-up
-            thumb-down cstick-down
-            thumb-middle a
+            // right hand
+
+            b right-index
+            x right-middle
+            z right-ring
+
+            r-digital right-index2
+            y right-middle2
+            r-analog right-ring2
+
+            dpad-up right-pinky2
+            // TODO: specify all dpad buttons as combinations here or failing that just rename to dpad and implement all in firmware
+            //dpad-down right-pinky-2 and right-thumb-down
+
+            cstick-left right-thumb-left
+            cstick-right right-thumb-right
+            cstick-up right-thumb-up
+            cstick-down right-thumb-down
+            a right-thumb-middle
+            //a right-thumb-middle or right-ring
+
+            // unused buttons
+
+            l-analog none
         }
     }
 
+    // Standard rivals2 profile
     - {
         logic rivals2
         activation-combination {
             - start
-            - left-hand-thumb-left
-            - left-hand-middle
+            - left-thumb-left
+            - left-ring
         }
         socd second-input-priority
 
-        left-hand {
-            pinky l-analog
-            ring stick-left
-            middle stick-down
-            index stick-right
+        buttons {
+            start start
 
-            middle-2 stick-up
+            // left hand
 
-            thumb-left mod-x
-            thumb-right mod-y
-        }
+            l-digital left-pinky
+            //l-analog left-pinky or right-ring
+            stick-left left-ring
+            stick-down left-middle
+            stick-right left-index
 
-        right-hand {
-            index b
-            middle x
-            ring z
-            pinky stick-up
+            stick-up right-pinky
+            stick-up2 left-middle2
+            //stick-up left-middle-2 or right-pinky
 
-            index-2 r-digital
-            middle-2 y
-            ring-2 r-analog
-            pinky-2 dpad-up
+            mod-x left-thumb-left
+            mod-y left-thumb-right
 
-            thumb-left cstick-left
-            thumb-right cstick-right
-            thumb-up cstick-up
-            thumb-down cstick-down
-            thumb-middle a
+            // right hand
+
+            b right-index
+            x right-middle
+            z right-ring
+
+            r-digital right-index2
+            y right-middle2
+            r-analog right-ring2
+
+            dpad-up right-pinky2
+            // TODO: specify all dpad buttons as combinations here or failing that just rename to dpad and implement all in firmware
+            //dpad-down right-pinky-2 and right-thumb-down
+
+            cstick-left right-thumb-left
+            cstick-right right-thumb-right
+            cstick-up right-thumb-up
+            cstick-down right-thumb-down
+            a right-thumb-middle
+            //a right-thumb-middle or right-ring
+
+            // unused buttons
+
+            l-analog none
         }
     }
 }
+
+
+
+
+
+
+// still undecided if I maybe want to expose config as this
+// Its easier to understand as a user but adds an extra kind of button type on
+// top of the one used in `activation_combination`.
+//
+// We can implement it, it should be possible to transform to the above representation in the flashing tool.
+// left-hand {
+//     pinky l-analog
+//     ring stick-left
+//     middle stick-down
+//     index stick-right
+
+//     middle-2 stick-up
+
+//     thumb-left mod-x
+//     thumb-right mod-y
+// }
+
+// right-hand {
+//     index b
+//     middle x
+//     ring z
+//     pinky stick-up
+
+//     index-2 r-digital
+//     middle-2 y
+//     ring-2 r-analog
+//     pinky-2 dpad-up
+
+//     thumb-left cstick-left
+//     thumb-right cstick-right
+//     thumb-up cstick-up
+//     thumb-down cstick-down
+//     thumb-middle a
+// }

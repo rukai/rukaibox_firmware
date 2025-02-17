@@ -1,53 +1,57 @@
 use crate::{
-    input::ButtonInput,
+    input::{ButtonInputLogical, ButtonInputResults},
     socd::{SocdState, SocdType},
 };
-use embedded_hal::digital::InputPin;
 use joybus_pio::GamecubeInput;
+use rukaibox_config::{LogicalButtonToPhysicalButton, Profile};
 
 pub struct ProjectPlusMapping {
-    pub input: ButtonInput,
     pub socd_state: SocdState,
     pub socd_type: SocdType,
+    pub button_mapping: LogicalButtonToPhysicalButton,
 }
 
 impl ProjectPlusMapping {
-    pub fn new(input: ButtonInput) -> Self {
+    pub fn new(profile: &Profile) -> Self {
+        let socd_type = match profile.socd {
+            rukaibox_config::SocdType::SecondInputPriority => SocdType::SecondInputPriority,
+            rukaibox_config::SocdType::Neutral => SocdType::Neutral,
+        };
+
         ProjectPlusMapping {
-            input,
+            button_mapping: profile.buttons.clone(),
             socd_state: Default::default(),
-            socd_type: SocdType::SecondInputPriority,
+            socd_type,
         }
     }
 
-    pub fn poll(&mut self) -> GamecubeInput {
-        // Query pins for input
-
-        let start = self.input.start.is_low().unwrap();
-
-        let mod_x = self.input.left_hand_thumb_left.is_low().unwrap();
-        let mod_y = self.input.left_hand_thumb_right.is_low().unwrap();
-
-        let a = self.input.right_hand_thumb_middle.is_low().unwrap();
-        let b = self.input.right_hand_index.is_low().unwrap();
-        let x = self.input.right_hand_middle.is_low().unwrap();
-        let y = self.input.right_hand_middle_2.is_low().unwrap();
-        let z = self.input.right_hand_ring.is_low().unwrap();
-        let dpad_up_shortcut = self.input.right_hand_pinky_2.is_low().unwrap();
-        let r_analog = self.input.right_hand_ring_2.is_low().unwrap();
-        let l_digital = self.input.left_hand_pinky.is_low().unwrap();
-        let r_digital = self.input.right_hand_index_2.is_low().unwrap();
-
-        let stick_left = self.input.left_hand_ring.is_low().unwrap();
-        let stick_right = self.input.left_hand_index.is_low().unwrap();
-        let stick_up = self.input.right_hand_pinky.is_low().unwrap()
-            || self.input.left_hand_middle_2.is_low().unwrap();
-        let stick_down = self.input.left_hand_middle.is_low().unwrap();
-
-        let cstick_left = self.input.right_hand_thumb_left.is_low().unwrap();
-        let cstick_right = self.input.right_hand_thumb_right.is_low().unwrap();
-        let cstick_up = self.input.right_hand_thumb_up.is_low().unwrap();
-        let cstick_down = self.input.right_hand_thumb_down.is_low().unwrap();
+    pub fn map_to_gamecube(&mut self, input: &ButtonInputResults) -> GamecubeInput {
+        let ButtonInputLogical {
+            mod_x,
+            mod_y,
+            start,
+            a,
+            b,
+            x,
+            y,
+            z,
+            dpad_up,
+            dpad_down: _,
+            dpad_left: _,
+            dpad_right: _,
+            l_digital,
+            r_digital,
+            l_analog,
+            r_analog,
+            stick_left,
+            stick_right,
+            stick_up,
+            stick_down,
+            cstick_left,
+            cstick_right,
+            cstick_up,
+            cstick_down,
+        } = input.to_gc(&self.button_mapping);
 
         // Resolve SOCD
 
@@ -120,7 +124,7 @@ impl ProjectPlusMapping {
                     ((stick_x_direction * 82), (stick_y_direction * 36))
                 } else if cstick_up {
                     ((stick_x_direction * 77), (stick_y_direction * 55))
-                } else if r_digital {
+                } else if r_digital || l_digital {
                     ((stick_x_direction * 82), (stick_y_direction * 35))
                 } else if b {
                     ((stick_x_direction * 85), (stick_y_direction * 31))
@@ -144,7 +148,7 @@ impl ProjectPlusMapping {
                     ((stick_x_direction * 34), (stick_y_direction * 82))
                 } else if cstick_up {
                     ((stick_x_direction * 55), (stick_y_direction * 77))
-                } else if r_digital {
+                } else if r_digital || l_digital {
                     ((stick_x_direction * 51), (stick_y_direction * 82))
                 } else if b {
                     ((stick_x_direction * 28), (stick_y_direction * 85))
@@ -183,12 +187,12 @@ impl ProjectPlusMapping {
 
         // Derive analog trigger values
 
-        let l_analog = 0;
+        let l_analog = if l_analog { 49 } else { 0 };
         let r_analog = if r_analog { 49 } else { 0 };
 
         // Derive dpad values
 
-        let dpad_up = (mod_x && mod_y && cstick_up) || dpad_up_shortcut;
+        let dpad_up = (mod_x && mod_y && cstick_up) || dpad_up;
         let dpad_down = mod_x && mod_y && cstick_down;
         let dpad_left = mod_x && mod_y && cstick_left;
         let dpad_right = mod_x && mod_y && cstick_right;

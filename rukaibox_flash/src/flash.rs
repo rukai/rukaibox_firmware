@@ -3,25 +3,22 @@ use picoboot_rs::{
     PICO_FLASH_START, PICO_PAGE_SIZE, PICO_SECTOR_SIZE, PICO_STACK_POINTER, PicobootConnection,
     TargetID,
 };
+use rukaibox_config::{CONFIG_OFFSET, CONFIG_SIZE, FIRMWARE_OFFSET, FIRMWARE_SIZE};
 use rusb::Context;
 
-pub const TOTAL_FLASH_SIZE: usize = 1024 * 1024 * 16; // 16 MiB
-pub const FIRMWARE_OFFSET: usize = 0; // 10 MiB
-pub const CONFIG_OFFSET: usize = 1024 * 1024 * 10; // 6 MiB
-
 pub fn flash_device(firmware: &[u8], config: &[u8]) -> Result<()> {
-    if firmware.len() >= CONFIG_OFFSET {
+    if firmware.len() >= FIRMWARE_SIZE {
         return Err(miette!(
             "Firmware is too large to flash, is {:?} bytes but must be less than {:?} bytes.",
             firmware.len(),
-            CONFIG_OFFSET
+            FIRMWARE_SIZE
         ));
     }
-    if config.len() >= TOTAL_FLASH_SIZE {
+    if config.len() >= CONFIG_SIZE {
         return Err(miette!(
             "Config is too large to flash, is {:?} bytes but must be less than {:?} bytes.",
             firmware.len(),
-            TOTAL_FLASH_SIZE
+            CONFIG_SIZE
         ));
     }
 

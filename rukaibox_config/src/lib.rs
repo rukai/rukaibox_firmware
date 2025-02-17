@@ -1,5 +1,14 @@
 #![no_std]
 
+// Memory layout
+pub const RP2040_FLASH_OFFSET: usize = 0x10000000;
+pub const RP2040_FLASH_SIZE: usize = 1024 * 1024 * 16; // 16 MiB
+
+pub const FIRMWARE_OFFSET: usize = 0;
+pub const FIRMWARE_SIZE: usize = 1024 * 1024 * 15; // 15 MiB
+pub const CONFIG_OFFSET: usize = 1024 * 1024 * 15;
+pub const CONFIG_SIZE: usize = 256; // 10 KiB
+
 use arrayvec::ArrayVec;
 use rkyv::{Archive, Deserialize, Serialize};
 
@@ -7,7 +16,7 @@ use rkyv::{Archive, Deserialize, Serialize};
 #[rkyv(derive(Debug))]
 pub struct Config {
     pub version: u32,
-    pub profiles: ArrayVec<Profile, 10>,
+    pub profiles: ArrayVec<Profile, 2>,
 }
 
 #[derive(Archive, Deserialize, Serialize, Debug, PartialEq, Default)]
@@ -16,45 +25,44 @@ pub struct Profile {
     pub activation_combination: ArrayVec<PhysicalButton, 10>,
     pub logic: BaseLogic,
     pub socd: SocdType,
-    pub left_hand: LeftHandMap,
-    pub right_hand: RightHandMap,
+    pub buttons: LogicalButtonToPhysicalButton,
 }
 
-#[derive(Archive, Deserialize, Serialize, Debug, PartialEq, Default)]
+#[derive(Archive, Deserialize, Serialize, Debug, PartialEq, Default, Clone)]
 #[rkyv(derive(Debug))]
-pub struct LeftHandMap {
-    pub pinky: LogicalButton,
-    pub ring: LogicalButton,
-    pub middle: LogicalButton,
-    pub index: LogicalButton,
+pub struct LogicalButtonToPhysicalButton {
+    pub mod_x: PhysicalButton,
+    pub mod_y: PhysicalButton,
 
-    pub middle_2: LogicalButton,
+    pub start: PhysicalButton,
+    pub a: PhysicalButton,
+    pub b: PhysicalButton,
+    pub x: PhysicalButton,
+    pub y: PhysicalButton,
+    pub z: PhysicalButton,
 
-    pub thumb_left: LogicalButton,
-    pub thumb_right: LogicalButton,
+    // TODO
+    pub dpad_up: PhysicalButton,
+
+    pub l_digital: PhysicalButton,
+    pub r_digital: PhysicalButton,
+    pub l_analog: PhysicalButton,
+    pub r_analog: PhysicalButton,
+
+    pub stick_left: PhysicalButton,
+    pub stick_right: PhysicalButton,
+    pub stick_up: PhysicalButton,
+    /// quick hack to work around lack of OR
+    pub stick_up2: PhysicalButton,
+    pub stick_down: PhysicalButton,
+
+    pub cstick_left: PhysicalButton,
+    pub cstick_right: PhysicalButton,
+    pub cstick_up: PhysicalButton,
+    pub cstick_down: PhysicalButton,
 }
 
-#[derive(Archive, Deserialize, Serialize, Debug, PartialEq, Default)]
-#[rkyv(derive(Debug))]
-pub struct RightHandMap {
-    pub index: LogicalButton,
-    pub middle: LogicalButton,
-    pub ring: LogicalButton,
-    pub pinky: LogicalButton,
-
-    pub index_2: LogicalButton,
-    pub middle_2: LogicalButton,
-    pub ring_2: LogicalButton,
-    pub pinky_2: LogicalButton,
-
-    pub thumb_left: LogicalButton,
-    pub thumb_right: LogicalButton,
-    pub thumb_up: LogicalButton,
-    pub thumb_down: LogicalButton,
-    pub thumb_middle: LogicalButton,
-}
-
-#[derive(Archive, Deserialize, Serialize, Debug, PartialEq, Default)]
+#[derive(Archive, Deserialize, Serialize, Debug, PartialEq, Default, Clone, Copy)]
 #[rkyv(derive(Debug))]
 pub enum SocdType {
     #[default]
@@ -62,7 +70,7 @@ pub enum SocdType {
     Neutral,
 }
 
-#[derive(Archive, Deserialize, Serialize, Debug, PartialEq, Default)]
+#[derive(Archive, Deserialize, Serialize, Debug, PartialEq, Default, Clone, Copy)]
 #[rkyv(derive(Debug))]
 pub enum BaseLogic {
     #[default]
@@ -70,39 +78,42 @@ pub enum BaseLogic {
     Rivals2,
 }
 
-#[derive(Archive, Deserialize, Serialize, Debug, PartialEq, Default)]
+#[derive(Archive, Deserialize, Serialize, Debug, PartialEq, Default, Clone, Copy)]
 #[rkyv(derive(Debug))]
 pub enum PhysicalButton {
     #[default]
     Start,
-    LeftHandPinky,
-    LeftHandRing,
-    LeftHandMiddle,
-    LeftHandIndex,
+    LeftPinky,
+    LeftRing,
+    LeftMiddle,
+    LeftIndex,
 
-    LeftHandMiddle2,
+    LeftMiddle2,
 
-    LeftHandThumbLeft,
-    LeftHandThumbRight,
+    LeftThumbLeft,
+    LeftThumbRight,
 
-    RightHandIndex,
-    RightHandMiddle,
-    RightHandRing,
-    RightHandPink,
+    RightIndex,
+    RightMiddle,
+    RightRing,
+    RightPinky,
 
-    RightHandIndex2,
-    RightHandMiddle2,
-    RightHandRing2,
-    RightHandPink2,
+    RightIndex2,
+    RightMiddle2,
+    RightRing2,
+    RightPinky2,
 
-    RightHandThumbLeft,
-    RightHandThumbRight,
-    RightHandThumbUp,
-    RightHandThumbDown,
-    RightHandThumbMiddle,
+    RightThumbLeft,
+    RightThumbRight,
+    RightThumbUp,
+    RightThumbDown,
+    RightThumbMiddle,
+
+    // This will never be pressed
+    None,
 }
 
-#[derive(Archive, Deserialize, Serialize, Debug, PartialEq, Default)]
+#[derive(Archive, Deserialize, Serialize, Debug, PartialEq, Default, Clone, Copy)]
 #[rkyv(derive(Debug))]
 pub enum LogicalButton {
     #[default]

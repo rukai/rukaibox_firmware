@@ -84,8 +84,10 @@ pub struct LogicalButtonToPhysicalButtonKdl {
     pub y: Parsed<PhysicalButtonKdl>,
     pub z: Parsed<PhysicalButtonKdl>,
 
-    // TODO
     pub dpad_up: Parsed<PhysicalButtonKdl>,
+    pub dpad_down: Parsed<PhysicalButtonKdl>,
+    pub dpad_left: Parsed<PhysicalButtonKdl>,
+    pub dpad_right: Parsed<PhysicalButtonKdl>,
 
     pub l_digital: Parsed<PhysicalButtonKdl>,
     pub r_digital: Parsed<PhysicalButtonKdl>,

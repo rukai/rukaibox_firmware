@@ -1,21 +1,23 @@
 mod project_plus;
+mod rivals2;
 
 use crate::input::ButtonInputResults;
 use joybus_pio::GamecubeInput;
 use project_plus::ProjectPlusMapping;
+use rivals2::Rivals2Mapping;
 use rukaibox_config::{BaseLogic, Config, Profile};
 
 pub enum MapProfile {
     ProjectPlus(ProjectPlusMapping),
     // TODO: rivals mapping
-    Rivals2(ProjectPlusMapping),
+    Rivals2(Rivals2Mapping),
 }
 
 impl MapProfile {
     pub fn new(config: &Profile) -> Self {
         match config.logic {
             BaseLogic::ProjectPlus => MapProfile::ProjectPlus(ProjectPlusMapping::new(config)),
-            BaseLogic::Rivals2 => MapProfile::Rivals2(ProjectPlusMapping::new(config)),
+            BaseLogic::Rivals2 => MapProfile::Rivals2(Rivals2Mapping::new(config)),
         }
     }
 

@@ -5,20 +5,20 @@ use crate::{
 use joybus_pio::GamecubeInput;
 use rukaibox_config::{LogicalButtonToPhysicalButton, Profile};
 
-pub struct ProjectPlusMapping {
+pub struct Rivals2Mapping {
     pub socd_state: SocdState,
     pub socd_type: SocdType,
     pub button_mapping: LogicalButtonToPhysicalButton,
 }
 
-impl ProjectPlusMapping {
+impl Rivals2Mapping {
     pub fn new(profile: &Profile) -> Self {
         let socd_type = match profile.socd {
             rukaibox_config::SocdType::SecondInputPriority => SocdType::SecondInputPriority,
             rukaibox_config::SocdType::Neutral => SocdType::Neutral,
         };
 
-        ProjectPlusMapping {
+        Rivals2Mapping {
             button_mapping: profile.buttons.clone(),
             socd_state: Default::default(),
             socd_type,
@@ -112,67 +112,83 @@ impl ProjectPlusMapping {
             _ => 0,
         };
 
+        let shield = l_digital || r_digital;
+
         // Derive stick values, applying modifiers
 
+        // Values taken from: https://github.com/JonnyHaystack/HayBox/blob/52188f41209a18c03e0c1d151679c32025a48962/src/modes/Rivals2.cpp#L109
+        // cstick modifiers on up b left out since they seem zetterburn specific and should probably go in a character specific profile.
         let (stick_x_offset, stick_y_offset) = if mod_x {
-            if diagonal {
-                if cstick_right {
-                    ((stick_x_direction * 72), (stick_y_direction * 61))
-                } else if cstick_left {
-                    ((stick_x_direction * 84), (stick_y_direction * 50))
-                } else if cstick_down {
-                    ((stick_x_direction * 82), (stick_y_direction * 36))
-                } else if cstick_up {
-                    ((stick_x_direction * 77), (stick_y_direction * 55))
-                } else if r_digital || l_digital {
-                    ((stick_x_direction * 82), (stick_y_direction * 35))
+            if diagonal && !shield {
+                if a {
+                    // angled tilts
+                    ((stick_x_direction * 69), (stick_y_direction * 53))
+                } else if z {
+                    // shortest up B
+                    // (x, y), (53, 68), (~0.31, ~0.188) [coords, code_values, in-game values]
+                    ((stick_x_direction * 53), (stick_y_direction * 42))
                 } else if b {
-                    ((stick_x_direction * 85), (stick_y_direction * 31))
+                    // 100% up B (just hold B)
+                    // (x, y), (123, 51), (1.14~, 0.29~) [coords, code_values, in-game values]
+                    ((stick_x_direction * 123), (stick_y_direction * 51))
                 } else {
-                    ((stick_x_direction * 70), (stick_y_direction * 34))
+                    // 60% up B (just release B)
+                    // (x, y), (68, 42), (~0.49, ~0.188) [coords, code_values, in-game values]
+                    ((stick_x_direction * 68), (stick_y_direction * 42))
                 }
+            } else if diagonal && shield {
+                //for max-length diagonal wavedash while holding ModX
+                ((stick_x_direction * 76), (stick_y_direction * 42))
             } else if vertical {
-                (0, (stick_y_direction * 60))
+                // 48 (0.31~ in-game), 0.3 allows tilts and shield drop
+                (0, (stick_y_direction * 53))
             } else if horizontal {
-                ((stick_x_direction * 70), 0)
+                //76 gives 0.58~ in-game for a medium speed walk. will also do tilts
+                ((stick_x_direction * 76), 0)
             } else {
                 (0, 0)
             }
         } else if mod_y {
-            if diagonal {
-                if cstick_right {
-                    ((stick_x_direction * 62), (stick_y_direction * 72))
-                } else if cstick_left {
-                    ((stick_x_direction * 40), (stick_y_direction * 84))
-                } else if cstick_down {
-                    ((stick_x_direction * 34), (stick_y_direction * 82))
-                } else if cstick_up {
-                    ((stick_x_direction * 55), (stick_y_direction * 77))
-                } else if r_digital || l_digital {
-                    ((stick_x_direction * 51), (stick_y_direction * 82))
+            if diagonal && !shield {
+                if z {
+                    // shortest up B
+                    // (x, y), (42, 53), (~0.188, ~0.31) [coords, code_values, in-game values]
+                    ((stick_x_direction * 42), (stick_y_direction * 53))
                 } else if b {
-                    ((stick_x_direction * 28), (stick_y_direction * 85))
+                    // 100% up B (just hold B)
+                    // (x, y), (51, 123), (~0.29, ~1.14) [coords, code_values, in-game values]
+                    ((stick_x_direction * 51), (stick_y_direction * 123))
                 } else {
-                    ((stick_x_direction * 28), (stick_y_direction * 58))
+                    // 60% up B (just release B)
+                    // (x, y), (42, 68), (~0.188, ~0.49) [coords, code_values, in-game values]
+                    ((stick_x_direction * 42), (stick_y_direction * 68))
                 }
             } else if vertical {
-                (0, (stick_y_direction * 70))
+                // 0.75~ in-game. will shield drop and tap jump; will not fast fall
+                (0, (stick_y_direction * 90))
             } else if horizontal {
-                ((stick_x_direction * 35), 0)
+                //53 equates to 0.318~ in-game. 0.3 is min to achieve a walk
+                ((stick_x_direction * 53), 0)
             } else {
                 (0, 0)
             }
-        } else if diagonal && stick_up {
-            ((stick_x_direction * 83), (stick_y_direction * 93))
+        } else if diagonal && shield {
+            // (0.77~, 0.77~) to prevent spot dodging when pressing diagonal on the ground
+            ((stick_x_direction * 92), (stick_y_direction * 92))
+        } else if diagonal && !shield {
+            //added this conditional to give joystick accurate diagonals rather than (+/- 1.2, 1.2) should be (0.87~, 0.87~)
+            (
+                // (0.78 in-game), reduced below 0.8 to allow crouch tilts/crouch turn-around tilts
+                (stick_x_direction * 92),
+                // 0.83 in-game >0.8 allows fast fall
+                (stick_y_direction * 96),
+            )
         } else {
-            ((stick_x_direction * 100), (stick_y_direction * 100))
+            // when only stick inputs, set to maximum
+            ((stick_x_direction * 127), (stick_y_direction * 127))
         };
         let stick_x = (128 + stick_x_offset) as u8;
         let stick_y = (128 + stick_y_offset) as u8;
-
-        // TODO: Cstick ASDI slideoff angle overrides?
-
-        // TODO: ledgedash SOCD override?
 
         // Derive C stick values
 
@@ -180,7 +196,7 @@ impl ProjectPlusMapping {
             // Allow for angled smash attacks
             ((cstick_x_direction * 65), (stick_y_direction * 23))
         } else {
-            ((cstick_x_direction * 100), (cstick_y_direction * 100))
+            ((cstick_x_direction * 127), (cstick_y_direction * 127))
         };
         let cstick_x = (128 + cstick_x_offset) as u8;
         let cstick_y = (128 + cstick_y_offset) as u8;

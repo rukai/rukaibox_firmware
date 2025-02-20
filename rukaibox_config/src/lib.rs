@@ -41,8 +41,10 @@ pub struct LogicalButtonToPhysicalButton {
     pub y: PhysicalButton,
     pub z: PhysicalButton,
 
-    // TODO
     pub dpad_up: PhysicalButton,
+    pub dpad_down: PhysicalButton,
+    pub dpad_left: PhysicalButton,
+    pub dpad_right: PhysicalButton,
 
     pub l_digital: PhysicalButton,
     pub r_digital: PhysicalButton,

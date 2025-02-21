@@ -8,14 +8,17 @@ A firmware for hitbox controllers, supporting the GRAM slim and other RP2040 bas
 
 ### Currently implemented
 
-* Supports [GRAM slim PCB](https://gramctrl.com/products/gram-slim-pcb)
+* Should support any RP204 board with the standard pinout. (currently only tested on the [GRAM slim PCB](https://gramctrl.com/products/gram-slim-pcb))
 * Supports gamecube (joybus) controller protocol.
 * Implementation in rust makes it easier to tweak, build and flash changes
+* Firmware level profiles for Project+ and Rivals 2
+* KDL config file allows configuring per profile key remapping, SOCD mode etc.
 
 ### Things I plan to implement
 
-* Configuration files to allow for setting up profile swap buttons, basic key remapping and SOCD setting.
-* A profile for Rivals 2
+* Cleanup the config file format
+* Move kdl_config project into its own repo
+* Move off rust nightly by helping move cargo bindep feature towards stabilization
 
 ### Things I would be happy for others to implement
 
@@ -35,7 +38,8 @@ A firmware for hitbox controllers, supporting the GRAM slim and other RP2040 bas
 
 1. Bring your controller's PCB into flashing (bootsel) mode. On the GRAM this is done by holding down the start button while plugging it in via USB C <-> USB A cable.
 2. Download executable from latest github [Releases](https://github.com/rukai/rukaibox_firmware/releases)
-3. Run downloaded flashing executable
+3. Modify config.kdl in a text editor to set key maps etc. (Optional)
+4. Run downloaded flashing executable
 
 On windows you must have winusb installed via [zadig](https://zadig.akeo.ie/), if you use a GC adapter in wii U / switch mode you have already done this.
 
@@ -44,7 +48,8 @@ On windows you must have winusb installed via [zadig](https://zadig.akeo.ie/), i
 1. First install [rustup](https://rustup.rs/)
 2. `git clone https://github.com/rukai/rukaibox_firmware`
 3. Make any changes to the firmware in `rukaibox_firmware/rukaibox_firmware`
-4. Bring your controller's PCB into flashing (bootsel) mode. On the GRAM this is done by holding down the start button while plugging it in via USB C <-> USB A cable.
-5. `cargo run --release -p rukaibox_flash`
+4. Make any changes to the config in config.kdl.
+5. Bring your controller's PCB into flashing (bootsel) mode. On the GRAM this is done by holding down the start button while plugging it in via USB C <-> USB A cable.
+6. `cargo run --release -p rukaibox_flash`
 
 On windows you must have winusb installed via [zadig](https://zadig.akeo.ie/), if you use a GC adapter in wii U / switch mode you have already done this.

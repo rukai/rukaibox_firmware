@@ -894,7 +894,7 @@ dependencies = [
 
 [[package]]
 name = "rukaibox_flash"
-version = "0.0.2"
+version = "0.0.3"
 dependencies = [
  "arrayvec",
  "goblin",

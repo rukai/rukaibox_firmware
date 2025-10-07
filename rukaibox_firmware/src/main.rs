@@ -6,12 +6,12 @@ mod input;
 mod profile;
 mod socd;
 
+use bsp::entry;
 use cortex_m::delay::Delay;
+use embedded_hal::digital::{InputPin, OutputPin};
 use input::ButtonInput;
 use joybus_pio::{GamecubeController, JoybusPio};
 // set the panic handler
-use bsp::entry;
-use embedded_hal::digital::{InputPin, OutputPin};
 use panic_halt as _;
 // This board has the same pinout as a pico so the pico bsp is handy.
 use bsp::hal::{

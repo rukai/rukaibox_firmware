@@ -49,7 +49,9 @@ jobs:
         # Otherwise only the last build to finish would get saved to the cache.
         key: ${{ matrix.name }}
     - name: Install cargo-hack
-      run: cargo install cargo-hack --version 0.5.8
+      uses: taiki-e/install-action@v2
+      with:
+        tool: cargo-hack@0.6.16
     - name: Check `cargo fmt` was run
       run: |
         cd rukaibox_firmware

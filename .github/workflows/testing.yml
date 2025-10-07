@@ -49,7 +49,9 @@ jobs:
         # Otherwise only the last build to finish would get saved to the cache.
         key: ${{ matrix.name }}
     - name: Install cargo-hack
-      run: cargo install cargo-hack --version 0.5.8
+      uses: taiki-e/install-action@v2
+      with:
+        tool: cargo-hack@0.6.16
     - name: Check `cargo fmt` was run
       run: |
         cd rukaibox_firmware
@@ -65,6 +67,8 @@ jobs:
         cargo hack --feature-powerset clippy --locked ${{ matrix.cargo_profile }} -- -D warnings
         cd ../rukaibox_flash
         cargo hack --feature-powerset clippy --locked ${{ matrix.cargo_profile }} -- -D warnings
+        # check that we can link together the final binary
+        cargo build
     - name: Ensure that tests did not create or modify any files that arent .gitignore'd
       # This is important because we are checking in the Cargo.lock file.
       # We want to fail CI if the Cargo.toml changed without including the corresponding Cargo.lock changes.

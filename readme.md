@@ -8,7 +8,7 @@ A firmware for hitbox controllers, supporting the GRAM slim and other RP2040 bas
 
 ### Currently implemented
 
-* Should support any RP204 board with the standard pinout. (currently only tested on the [GRAM slim PCB](https://gramctrl.com/products/gram-slim-pcb))
+* Should support any RP2040 board with the standard pinout. (currently only tested on the [GRAM slim PCB](https://gramctrl.com/products/gram-slim-pcb))
 * Supports gamecube (joybus) controller protocol.
 * Implementation in rust makes it easier to tweak, build and flash changes
 * Firmware level profiles for Project+ and Rivals 2

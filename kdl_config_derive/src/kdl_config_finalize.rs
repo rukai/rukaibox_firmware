@@ -7,14 +7,12 @@ use syn::{
 
 fn get_finalize_type(attrs: &[Attribute]) -> Result<String, syn::Error> {
     for attr in attrs {
-        if let Meta::NameValue(name_value) = &attr.meta {
-            if name_value.path.is_ident("kdl_config_finalize_into") {
-                if let Expr::Lit(lit) = &name_value.value {
-                    if let Lit::Str(lit) = &lit.lit {
-                        return Ok(lit.value());
-                    }
-                }
-            }
+        if let Meta::NameValue(name_value) = &attr.meta
+            && name_value.path.is_ident("kdl_config_finalize_into")
+            && let Expr::Lit(lit) = &name_value.value
+            && let Lit::Str(lit) = &lit.lit
+        {
+            return Ok(lit.value());
         }
     }
 

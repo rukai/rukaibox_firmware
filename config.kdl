@@ -36,7 +36,7 @@ profiles {
 
             l-digital left-pinky
             //TODO: l-digital left-pinky or right-ring
-            r-digital right-index2
+            r-digital right-index
             l-analog none
             r-analog right-ring2
 
@@ -57,10 +57,10 @@ profiles {
 
             a right-thumb-middle
             //TODO: a right-thumb-middle or right-ring
-            b right-index
+            b right-ring
             x right-middle
             y right-middle2
-            z right-ring
+            z right-index2
             //TODO: z mod-x and right-ring
 
             // The P+ profile already allows dpad controls via `mod-x + mod-y + cstick-up` etc.

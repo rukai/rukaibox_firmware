@@ -1,16 +1,19 @@
 mod project_plus;
 mod rivals2;
+mod ultimate;
 
 use crate::input::ButtonInputResults;
 use joybus_pio::GamecubeInput;
 use project_plus::ProjectPlusMapping;
 use rivals2::Rivals2Mapping;
 use rukaibox_config::{BaseLogic, Config, Profile};
+use ultimate::UltimateMapping;
 
 pub enum MapProfile {
     ProjectPlus(ProjectPlusMapping),
     // TODO: rivals mapping
     Rivals2(Rivals2Mapping),
+    Ultimate(UltimateMapping),
 }
 
 impl MapProfile {
@@ -18,6 +21,7 @@ impl MapProfile {
         match config.logic {
             BaseLogic::ProjectPlus => MapProfile::ProjectPlus(ProjectPlusMapping::new(config)),
             BaseLogic::Rivals2 => MapProfile::Rivals2(Rivals2Mapping::new(config)),
+            BaseLogic::Ultimate => MapProfile::Ultimate(UltimateMapping::new(config)),
         }
     }
 
@@ -25,6 +29,7 @@ impl MapProfile {
         match self {
             MapProfile::ProjectPlus(x) => x.map_to_gamecube(input),
             MapProfile::Rivals2(x) => x.map_to_gamecube(input),
+            MapProfile::Ultimate(x) => x.map_to_gamecube(input),
         }
     }
 

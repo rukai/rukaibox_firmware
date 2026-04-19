@@ -16,7 +16,7 @@ use rkyv::{Archive, Deserialize, Serialize};
 #[rkyv(derive(Debug))]
 pub struct Config {
     pub version: u32,
-    pub profiles: ArrayVec<Profile, 2>,
+    pub profiles: ArrayVec<Profile, 3>,
 }
 
 #[derive(Archive, Deserialize, Serialize, Debug, PartialEq, Default)]
@@ -78,6 +78,7 @@ pub enum BaseLogic {
     #[default]
     ProjectPlus,
     Rivals2,
+    Ultimate,
 }
 
 #[derive(Archive, Deserialize, Serialize, Debug, PartialEq, Default, Clone, Copy)]

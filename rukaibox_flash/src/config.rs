@@ -56,7 +56,7 @@ fn load_source(path: Option<PathBuf>) -> miette::Result<NamedSource<String>> {
 #[kdl_config_finalize_into = "rukaibox_config::Config"]
 pub struct ConfigKdl {
     pub version: Parsed<u32>,
-    pub profiles: Parsed<ArrayVec<Parsed<ProfileKdl>, 2>>,
+    pub profiles: Parsed<ArrayVec<Parsed<ProfileKdl>, 3>>,
 }
 
 // TODO: add derive side validation that Parsed is used everywhere.
@@ -155,6 +155,7 @@ pub enum BaseLogicKdl {
     #[default]
     ProjectPlus,
     Rivals2,
+    Ultimate,
 }
 
 #[derive(KdlConfig, KdlConfigFinalize, Default, Debug)]
